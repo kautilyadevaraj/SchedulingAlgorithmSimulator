@@ -39,7 +39,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
                   backgroundSize: "cover",
                 }}
               >
-                <span>P{index + 1}</span>
+                <span>{process.arrival_time === -1 ? `Idle` : `P${index + 1}`}</span>
               </div>
             );
           })}
@@ -53,12 +53,20 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
             return (
               <div
                 key={index}
-                className={`relative flex text-white text-xs font-medium ${index === processes.length - 1 ?'flex justify-between' :""} `}
+                className={`relative flex text-white text-xs font-medium ${
+                  index === processes.length - 1 ? "flex justify-between" : ""
+                } `}
                 style={{
                   width: `${widthPercentage}%`,
                 }}
               >
-                <span>{displayTime}</span>
+                <span
+                  className={`${
+                    index !== processes.length - 1 && index !== 0 ? "absolute -left-1.5" : ""
+                  }`}
+                >
+                  {displayTime}
+                </span>
                 {index === processes.length - 1 && <span>{time}</span>}
               </div>
             );

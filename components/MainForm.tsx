@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import GanttChart from "./GanttChart";
+import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
 
 const FormSchema = z.object({
   algorithm: z.string({
@@ -54,11 +55,16 @@ type Process = {
 };
 
 export default function MainForm() {
+
+  
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
 
   const [processes, setProcesses] = useState<Process[]>([]);
+
+  const [resultSequence, setResultSequence] = useState<Process[]>([]);
 
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -87,7 +93,7 @@ export default function MainForm() {
   };
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(JSON.stringify(data, null, 2));
+    setResultSequence(firstComeFirstServe(processes));
   }
 
   return (
@@ -129,11 +135,11 @@ export default function MainForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <Button type="submit" >Submit</Button>
             </form>
           </Form>
         </div>
-        <GanttChart processes={processes}></GanttChart>
+        <GanttChart processes={resultSequence}></GanttChart>
       </div>
       {/* Display the array of processes */}
 
