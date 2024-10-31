@@ -1,15 +1,14 @@
 "use client";
 
-import Link from "next/link";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -25,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -104,7 +102,6 @@ export default function MainForm() {
 
 
   const handleEditProcess = (index: number) => {
-    const processToEdit = processes[index];
     setCurrentEditIndex(index);
     setPopoverOpen(true); // Open popover for editing
   };
