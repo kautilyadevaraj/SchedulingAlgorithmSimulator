@@ -38,14 +38,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "./ui/input";
 import { useState } from "react";
 import GanttChart from "./GanttChart";
 import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
+import { shortestJobFirst } from "@/lib/ShortestJobFirst";
+import { roundRobin } from "@/lib/RoundRobin";
+import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
 
 const FormSchema = z.object({
   algorithm: z.string({
     required_error: "Please select an algorithm to display.",
   }),
+  quantum : z.coerce.number().lte(100, {
+    message: "Quantum cannot be greater than 100.",
+  }).optional(),
 });
 
 type Process = {
@@ -70,6 +77,8 @@ export default function MainForm() {
 
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
 
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("");
+
   const addProcess = (newProcess: Process) => {
     if (currentEditIndex !== null) {
       // Edit existing process
@@ -93,7 +102,25 @@ export default function MainForm() {
   };
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    setResultSequence(firstComeFirstServe(processes));
+    console.log("submitted");
+    let sequence: Process[] = [];
+    switch (data.algorithm) {
+      case "fCFS":
+        sequence = firstComeFirstServe(processes);
+        break;
+      case "SJF":
+        sequence = shortestJobFirst(processes);
+        break;
+      case "RR":
+        sequence = roundRobin(processes, data.quantum ?? 0);
+        break;
+      case "SRTF":
+        sequence = shortestRemainingTimeFirst(processes);
+      default:
+        break;
+    }
+
+    setResultSequence(sequence);
   }
 
   return (
@@ -111,7 +138,10 @@ export default function MainForm() {
                       Select a scheduling algorithm to simulate.
                     </FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedAlgorithm(value); // track selected algorithm
+                      }}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -135,7 +165,28 @@ export default function MainForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" >Submit</Button>
+              {/* Conditionally render time quantum input */}
+              {selectedAlgorithm === "RR" && (
+                <FormField
+                  control={form.control}
+                  name="quantum"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Enter Time Quantum</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          placeholder="Time Quantum"
+                          className="input-field"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              <Button type="submit">Submit</Button>
             </form>
           </Form>
         </div>
