@@ -1,5 +1,6 @@
 // Define the Process type
 type Process = {
+  process_id: number;
   arrival_time: number;
   burst_time: number;
   background: string;
@@ -41,6 +42,7 @@ export function shortestRemainingTimeFirst(processes: Process[]): Process[] {
       const nextProcess = sortedProcesses[index];
       const gapDuration = nextProcess.arrival_time - currentTime;
       result.push({
+        process_id: -1,
         arrival_time: -1,
         burst_time: gapDuration,
         background: "transparent",
@@ -77,8 +79,8 @@ export function shortestRemainingTimeFirst(processes: Process[]): Process[] {
 
     if (
       mergedResult.length > 0 &&
-      mergedResult[mergedResult.length - 1].background ===
-        currentProcess.background
+      mergedResult[mergedResult.length - 1].process_id ===
+        currentProcess.process_id
     ) {
       // Merge with the previous process if the background is the same
       mergedResult[mergedResult.length - 1].burst_time +=

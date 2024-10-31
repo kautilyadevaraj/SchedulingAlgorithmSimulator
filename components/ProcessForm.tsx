@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { GradientPicker } from "./GradientPicker";
-import { useState } from "react";
 import { useEffect } from "react";
 
 type Process = {
@@ -25,7 +23,6 @@ type Process = {
   burst_time: number;
   background: string;
 };
-
 
 const ProcessSchema = z.object({
   arrival_time: z.coerce.number().lte(100, {
@@ -45,24 +42,22 @@ type ProcessFormProps = {
 };
 
 export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
-  const { register, handleSubmit, reset } = useForm<
-    z.infer<typeof ProcessSchema>
-  >({
-    resolver: zodResolver(ProcessSchema),
-    defaultValues: initialValues,
-  });
   const form = useForm<z.infer<typeof ProcessSchema>>({
     resolver: zodResolver(ProcessSchema),
-    defaultValues: { arrival_time: 0, burst_time: 1, background: "#ffe83f" },
+    defaultValues: initialValues || {
+      arrival_time: 0,
+      burst_time: 1,
+      background: "#ffe83f",
+    },
   });
 
   useEffect(() => {
-    if (initialValues) reset(initialValues); // Pre-fill form on edit
-  }, [initialValues, reset]);
+    if (initialValues) form.reset(initialValues);
+  }, [initialValues, form]);
 
   const onSubmit = (data: z.infer<typeof ProcessSchema>) => {
     addProcess(data);
-    reset(); // Reset form after submission
+    form.reset();
   };
 
   return (
@@ -77,7 +72,6 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
               <FormControl>
                 <Input placeholder="Default arrival time : 0" {...field} />
               </FormControl>
-
               <FormMessage />
             </FormItem>
           )}
@@ -91,7 +85,6 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
               <FormControl>
                 <Input placeholder="Default burst time : 1" {...field} />
               </FormControl>
-
               <FormMessage />
             </FormItem>
           )}
@@ -107,7 +100,6 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
                 background={field.value}
                 setBackground={field.onChange}
               />
-
               <FormMessage />
             </FormItem>
           )}

@@ -2,10 +2,12 @@
 
 // Define the Process type
 type Process = {
+  process_id: number;
   arrival_time: number;
   burst_time: number;
   background: string;
 };
+
 
 /**
  * Applies the First Come First Serve (FCFS) scheduling algorithm
@@ -38,6 +40,7 @@ export function firstComeFirstServe(processes: Process[]): Process[] {
       if (gapDuration > 0) {
         // Add a gap process object
         result.push({
+          process_id : -1,
           arrival_time: -1, // Not significant for gap
           burst_time: gapDuration, // Duration of the idle time
           background: "transparent", // Color for gap

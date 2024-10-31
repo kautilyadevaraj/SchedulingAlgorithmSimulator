@@ -2,10 +2,12 @@
 
 // Define the Process type
 type Process = {
-    arrival_time: number;
-    burst_time: number;
-    background: string;
-  };
+  process_id: number;
+  arrival_time: number;
+  burst_time: number;
+  background: string;
+};
+
   
   /**
    * Applies the Round Robin scheduling algorithm on an array of process objects.
@@ -38,6 +40,7 @@ type Process = {
         const nextProcess = sortedProcesses[index];
         const gapDuration = nextProcess.arrival_time - currentTime;
         result.push({
+          process_id : -1,
           arrival_time: -1,
           burst_time: gapDuration,
           background: "transparent",
@@ -67,6 +70,24 @@ type Process = {
       }
     }
   
-    return result;
+    const mergedResult: Process[] = [];
+    for (let i = 0; i < result.length; i++) {
+      const currentProcess = result[i];
+
+      if (
+        mergedResult.length > 0 &&
+        mergedResult[mergedResult.length - 1].process_id ===
+          currentProcess.process_id
+      ) {
+        // Merge with the previous process if the background is the same
+        mergedResult[mergedResult.length - 1].burst_time +=
+          currentProcess.burst_time;
+      } else {
+        // Otherwise, add as a new entry
+        mergedResult.push({ ...currentProcess });
+      }
+    }
+
+    return mergedResult;
   }
   

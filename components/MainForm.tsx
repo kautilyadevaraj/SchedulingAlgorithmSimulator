@@ -56,10 +56,12 @@ const FormSchema = z.object({
 });
 
 type Process = {
+  process_id: number;
   arrival_time: number;
   burst_time: number;
   background: string;
 };
+
 
 export default function MainForm() {
 
@@ -79,21 +81,27 @@ export default function MainForm() {
 
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("");
 
-  const addProcess = (newProcess: Process) => {
+  const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
       // Edit existing process
       setProcesses((prevProcesses) =>
         prevProcesses.map((process, index) =>
-          index === currentEditIndex ? newProcess : process
+          index === currentEditIndex
+            ? { ...newProcess, process_id: process.process_id } // Retain original process_id
+            : process
         )
       );
       setCurrentEditIndex(null); // Reset after editing
     } else {
       // Add new process
-      setProcesses((prevProcesses) => [...prevProcesses, newProcess]);
+      setProcesses((prevProcesses) => [
+        ...prevProcesses,
+        { ...newProcess, process_id: prevProcesses.length + 1 }, // Assign process_id based on array length
+      ]);
     }
     setPopoverOpen(false); // Close popover after adding/editing
   };
+
 
   const handleEditProcess = (index: number) => {
     const processToEdit = processes[index];

@@ -1,6 +1,7 @@
 import React from "react";
 
 type Process = {
+  process_id : number,
   arrival_time: number;
   burst_time: number;
   background: string;
@@ -39,7 +40,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
                   backgroundSize: "cover",
                 }}
               >
-                <span>{process.arrival_time === -1 ? `Idle` : `P${index + 1}`}</span>
+                <span>{process.arrival_time === -1 ? `Idle` : `P${process.process_id}`}</span>
               </div>
             );
           })}
