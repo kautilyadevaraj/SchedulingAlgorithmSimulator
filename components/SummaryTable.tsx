@@ -27,8 +27,7 @@ export function SummaryTable({
 }: SummaryTableProps) {
   let totalWaitingTime = 0;
   let totalTurnaroundTime = 0;
-  let currentTime = 0;
-  let totalIdleTime = 0;
+
 
   // Calculate waiting and turnaround times based on the unique original processes
   const calculatedProcesses = originalProcesses.map((process) => {
@@ -64,14 +63,7 @@ export function SummaryTable({
   });
 
   // Calculate total idle time by looking for idle periods in the scheduled array
-  scheduledProcesses.forEach((process) => {
-    if (process.process_id === -1) {
-      totalIdleTime += process.burst_time;
-      currentTime += process.burst_time; // Update the time during idle periods
-    } else {
-      currentTime += process.burst_time;
-    }
-  });
+  
 
   return (
     <Table>
