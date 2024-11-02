@@ -1,6 +1,5 @@
 "use client";
 
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -39,6 +38,7 @@ import {
 import { Input } from "./ui/input";
 import { useState } from "react";
 import GanttChart from "./GanttChart";
+import { SummaryTable } from "./SummaryTable";
 import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
 import { shortestJobFirst } from "@/lib/ShortestJobFirst";
 import { roundRobin } from "@/lib/RoundRobin";
@@ -48,9 +48,12 @@ const FormSchema = z.object({
   algorithm: z.string({
     required_error: "Please select an algorithm to display.",
   }),
-  quantum : z.coerce.number().lte(100, {
-    message: "Quantum cannot be greater than 100.",
-  }).optional(),
+  quantum: z.coerce
+    .number()
+    .lte(100, {
+      message: "Quantum cannot be greater than 100.",
+    })
+    .optional(),
 });
 
 type Process = {
@@ -60,11 +63,7 @@ type Process = {
   background: string;
 };
 
-
 export default function MainForm() {
-
-  
-
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -78,6 +77,8 @@ export default function MainForm() {
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
 
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("");
+
+  const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
 
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
@@ -99,7 +100,6 @@ export default function MainForm() {
     }
     setPopoverOpen(false); // Close popover after adding/editing
   };
-
 
   const handleEditProcess = (index: number) => {
     setCurrentEditIndex(index);
@@ -126,6 +126,7 @@ export default function MainForm() {
     }
 
     setResultSequence(sequence);
+    setFinalizedProcesses([...processes]);
   }
 
   return (
@@ -195,7 +196,15 @@ export default function MainForm() {
             </form>
           </Form>
         </div>
-        <GanttChart processes={resultSequence}></GanttChart>
+        {finalizedProcesses.length > 0 && (
+          <>
+            <GanttChart processes={resultSequence} />
+            <SummaryTable
+              originalProcesses={finalizedProcesses}
+              scheduledProcesses={resultSequence}
+            />
+          </>
+        )}
       </div>
       {/* Display the array of processes */}
 
@@ -243,7 +252,14 @@ export default function MainForm() {
                 <Button variant="outline">Add Process</Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
-                <ProcessForm addProcess={addProcess} />
+                <ProcessForm
+                  addProcess={addProcess}
+                  initialValues={
+                    currentEditIndex !== null
+                      ? processes[currentEditIndex]
+                      : undefined
+                  }
+                />
               </PopoverContent>
             </Popover>
             <Button onClick={() => setProcesses([])}>
