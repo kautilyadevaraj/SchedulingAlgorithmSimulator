@@ -80,6 +80,8 @@ export default function MainForm() {
 
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
 
+
+
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
       // Edit existing process
@@ -196,15 +198,6 @@ export default function MainForm() {
             </form>
           </Form>
         </div>
-        {finalizedProcesses.length > 0 && (
-          <>
-            <GanttChart processes={resultSequence} />
-            <SummaryTable
-              originalProcesses={finalizedProcesses}
-              scheduledProcesses={resultSequence}
-            />
-          </>
-        )}
       </div>
       {/* Display the array of processes */}
 
@@ -268,6 +261,19 @@ export default function MainForm() {
           </div>
         </CardContent>
       </Card>
+      {finalizedProcesses.length > 0 && (
+        <div className="col-span-3 flex flex-col items-center w-full">
+          <div className="md:w-[70vw]">
+            <GanttChart processes={resultSequence} />
+          </div>
+          <div className="w-fit flex">
+            <SummaryTable
+              originalProcesses={finalizedProcesses}
+              scheduledProcesses={resultSequence}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
