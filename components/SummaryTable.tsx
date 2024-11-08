@@ -21,11 +21,13 @@ type Process = {
 type SummaryTableProps = {
   originalProcesses: Process[];
   scheduledProcesses: Process[];
+  algorithm: string;
 };
 
 export function SummaryTable({
   originalProcesses,
   scheduledProcesses,
+  algorithm,
 }: SummaryTableProps) {
   const [animationKey, setAnimationKey] = useState(0);
 
@@ -33,41 +35,80 @@ export function SummaryTable({
   useEffect(() => {
     setAnimationKey((prevKey) => prevKey + 1);
   }, [scheduledProcesses]);
+
   let totalWaitingTime = 0;
   let totalTurnaroundTime = 0;
 
-  // Calculate waiting and turnaround times based on the unique original processes
+  // Initialize calculated processes without waiting time calculation
   const calculatedProcesses = originalProcesses.map((process) => {
-    // Filter scheduled processes to get all intervals for this process_id
-    const intervals = scheduledProcesses.filter(
-      (scheduledProcess) => scheduledProcess.process_id === process.process_id
-    );
-
-    // Calculate waiting time by summing idle times between intervals
-    let processStartTime = process.arrival_time;
-    let waitingTime = 0;
-    intervals.forEach((interval) => {
-      if (processStartTime < interval.arrival_time) {
-        waitingTime += interval.arrival_time - processStartTime;
-      }
-      processStartTime = interval.arrival_time + interval.burst_time;
-    });
-
-    // Turnaround time is the total time from arrival to the last execution finish
-    const turnaroundTime =
-      waitingTime +
-      intervals.reduce((sum, interval) => sum + interval.burst_time, 0);
-
-    // Update cumulative totals
-    totalWaitingTime += waitingTime;
-    totalTurnaroundTime += turnaroundTime;
-
     return {
       ...process,
-      waitingTime,
-      turnaroundTime,
+      waitingTime: 0,
+      turnaroundTime: 0,
     };
   });
+
+  // If the algorithm is FCFS, calculate waiting and turnaround times after sorting by arrival time
+  if (algorithm === "fCFS") {
+    // Sort processes by arrival time for FCFS order
+    const sortedProcesses = [...calculatedProcesses].sort(
+      (a, b) => a.arrival_time - b.arrival_time
+    );
+
+    let cumulativeTime = 0;
+
+    // Calculate waiting time and turnaround time for each process
+    sortedProcesses.forEach((process, index) => {
+      if (index === 0) {
+        // First process has no waiting time
+        process.waitingTime = 0;
+      } else {
+        // Waiting time is the cumulative time minus arrival time
+        process.waitingTime = Math.max(
+          0,
+          cumulativeTime - process.arrival_time
+        );
+      }
+
+      // Turnaround time is waiting time + burst time
+      process.turnaroundTime = process.waitingTime + process.burst_time;
+
+      // Update cumulative time with the burst time of the current process
+      cumulativeTime += process.burst_time;
+
+      // Update totals
+      totalWaitingTime += process.waitingTime;
+      totalTurnaroundTime += process.turnaroundTime;
+    });
+  } else {
+    // For other algorithms, use intervals in scheduledProcesses
+    calculatedProcesses.forEach((process) => {
+      const intervals = scheduledProcesses.filter(
+        (scheduledProcess) => scheduledProcess.process_id === process.process_id
+      );
+
+      let processStartTime = process.arrival_time;
+      let waitingTime = 0;
+
+      intervals.forEach((interval) => {
+        if (processStartTime < interval.arrival_time) {
+          waitingTime += interval.arrival_time - processStartTime;
+        }
+        processStartTime = interval.arrival_time + interval.burst_time;
+      });
+
+      const turnaroundTime =
+        waitingTime +
+        intervals.reduce((sum, interval) => sum + interval.burst_time, 0);
+
+      process.waitingTime = waitingTime;
+      process.turnaroundTime = turnaroundTime;
+
+      // Update cumulative totals
+      totalWaitingTime += waitingTime;
+      totalTurnaroundTime += turnaroundTime;
+    });
+  }
 
   const popOutVariants = {
     hidden: { scale: 0.8, opacity: 0 },

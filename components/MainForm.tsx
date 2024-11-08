@@ -80,8 +80,6 @@ export default function MainForm() {
 
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
 
-
-
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
       // Edit existing process
@@ -109,7 +107,6 @@ export default function MainForm() {
   };
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log("submitted");
     let sequence: Process[] = [];
     switch (data.algorithm) {
       case "fCFS":
@@ -270,6 +267,7 @@ export default function MainForm() {
             <SummaryTable
               originalProcesses={finalizedProcesses}
               scheduledProcesses={resultSequence}
+              algorithm={selectedAlgorithm}
             />
           </div>
         </div>

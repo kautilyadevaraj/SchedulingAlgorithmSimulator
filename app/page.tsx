@@ -14,7 +14,7 @@ export default function Home() {
     setColor(theme === "dark" ? "#ffffff" : "#000000");
   }, [theme]);
   return (
-    <div className="container max-w-full">
+    <div className="container max-w-[100vw]">
       <main className="flex justify-center sm:items-start p-5 grow-0">
         {/* <AnimatedGridPattern
           numSquares={30}
