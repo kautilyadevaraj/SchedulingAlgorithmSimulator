@@ -43,6 +43,7 @@ import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
 import { shortestJobFirst } from "@/lib/ShortestJobFirst";
 import { roundRobin } from "@/lib/RoundRobin";
 import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
+import SummaryStatistics from "./SummaryStatistics";
 
 const FormSchema = z.object({
   algorithm: z.string({
@@ -129,7 +130,7 @@ export default function MainForm() {
   }
 
   return (
-    <div className="grid grid-cols-3 w-full">
+    <div className="grid grid-cols-3 w-full overflow-hidden">
       <div className="col-span-2 row-span-2 container p-5 flex flex-col">
         <div className="max-w-[300px]">
           <Form {...form}>
@@ -259,16 +260,20 @@ export default function MainForm() {
         </CardContent>
       </Card>
       {finalizedProcesses.length > 0 && (
-        <div className="col-span-3 flex flex-col items-center w-full">
-          <div className="md:w-[70vw]">
+        <div className="col-span-3 flex flex-col items-center ">
+          <div className="md:w-[75vw]">
             <GanttChart processes={resultSequence} />
           </div>
-          <div className="w-fit flex">
-            <SummaryTable
-              originalProcesses={finalizedProcesses}
-              scheduledProcesses={resultSequence}
-              algorithm={selectedAlgorithm}
-            />
+          <div className="w-full flex justify-center">
+            <div className="pl-10">
+              <SummaryTable
+                originalProcesses={finalizedProcesses}
+                scheduledProcesses={resultSequence}
+                algorithm={selectedAlgorithm}
+              />
+            </div>
+
+            <SummaryStatistics totalProcesses={finalizedProcesses.length} scheduledProcesses={resultSequence}/>
           </div>
         </div>
       )}
