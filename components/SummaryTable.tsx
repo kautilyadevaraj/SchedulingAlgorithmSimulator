@@ -62,7 +62,7 @@ if (algorithm === "fCFS") {
   let cumulativeTime = 0;
 
   // Calculate waiting time and turnaround time for each process
-  sortedProcesses.forEach((process, index) => {
+  sortedProcesses.forEach((process) => {
     // Skip idle periods (arrival_time === -1) and adjust cumulative time for gaps
     if (process.arrival_time === -1) {
       return; // Ignore idle periods for waiting and turnaround calculations
