@@ -199,12 +199,12 @@ export default function MainForm() {
       </div>
       {/* Display the array of processes */}
 
-      <Card>
+      <Card className="w-[410px]">
         <CardHeader>
           <CardTitle>Processes</CardTitle>
           <CardDescription>Add a process to simulate it</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6">
+        <CardContent className="grid gap-6 w-full">
           <div className="flex justify-start flex-wrap max-w-[360px]">
             {processes.map((process, index) => (
               <div key={index}>
@@ -237,7 +237,7 @@ export default function MainForm() {
               </div>
             ))}
           </div>
-          <div className="flex justify-around">
+          <div className="flex justify-around w-full">
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline">Add Process</Button>
