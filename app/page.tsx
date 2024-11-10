@@ -3,6 +3,7 @@
 import MainForm from "@/components/MainForm";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import HyperText from "@/components/ui/hyper-text";
 
 import Particles from "@/components/ui/particles";
 
@@ -26,8 +27,11 @@ export default function Home() {
             "h-[100%] skew-y-25"
           )}
         /> */}
-        <div className="w-full pb-5">
-          <h1 className="text-center text-xl font-semibold">Scheduling Algorithm Simulator</h1>
+        <div className="w-full flex justify-center pb-5">
+          <HyperText
+            className="text-4xl text-center font-bold text-black dark:text-white"
+            text="Scheduling Algorithm Simulator"
+          />
         </div>
 
         <Particles
