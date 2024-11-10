@@ -130,8 +130,8 @@ export default function MainForm() {
   }
 
   return (
-    <div className="grid grid-cols-2 w-[90vw] overflow-hidden justify-items-center">
-      <div className="row-span-2 container px-5 flex flex-col items-center">
+    <div className="grid grid-cols-2 w-full overflow-hidden justify-items-center">
+      <div className="row-span-2 container pl-14 flex flex-col items-center">
         <div className="max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -199,7 +199,7 @@ export default function MainForm() {
       </div>
       {/* Display the array of processes */}
 
-      <Card className="w-[410px]">
+      <Card className="w-1/2">
         <CardHeader>
           <CardTitle>Processes</CardTitle>
           <CardDescription>Add a process to simulate it</CardDescription>

@@ -15,7 +15,7 @@ export default function Home() {
   }, [theme]);
   return (
     <div className="container max-w-full overflow-hidden">
-      <main className="flex justify-center sm:items-start p-5 grow-0 overflow-hidden">
+      <main className="flex flex-col justify-center sm:items-start p-5 grow-0 overflow-hidden">
         {/* <AnimatedGridPattern
           numSquares={30}
           maxOpacity={0.3}
@@ -26,6 +26,10 @@ export default function Home() {
             "h-[100%] skew-y-25"
           )}
         /> */}
+        <div className="w-full pb-5">
+          <h1 className="text-center text-xl font-semibold">Scheduling Algorithm Simulator</h1>
+        </div>
+
         <Particles
           className="absolute inset-0"
           quantity={100}
