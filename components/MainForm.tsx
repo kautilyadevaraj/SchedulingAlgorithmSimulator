@@ -36,7 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "./ui/input";
-import { useState } from "react";
+import {useRef , useState } from "react";
 import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
 import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
@@ -80,6 +80,8 @@ export default function MainForm() {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("");
 
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
+
+  const summaryRef = useRef<HTMLDivElement>(null);
 
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
@@ -127,6 +129,9 @@ export default function MainForm() {
 
     setResultSequence(sequence);
     setFinalizedProcesses([...processes]);
+     setTimeout(() => {
+       summaryRef.current?.scrollIntoView({ behavior: "smooth" });
+     }, 0);
   }
 
   return (
@@ -260,7 +265,7 @@ export default function MainForm() {
         </CardContent>
       </Card>
       {finalizedProcesses.length > 0 && (
-        <div className="col-span-3 flex flex-col items-center">
+        <div ref={summaryRef} className="col-span-3 flex flex-col items-center">
           <div className="md:w-3/4">
             <GanttChart processes={resultSequence} />
           </div>
@@ -273,7 +278,10 @@ export default function MainForm() {
               />
             </div>
 
-            <SummaryStatistics totalProcesses={finalizedProcesses.length} scheduledProcesses={resultSequence}/>
+            <SummaryStatistics
+              totalProcesses={finalizedProcesses.length}
+              scheduledProcesses={resultSequence}
+            />
           </div>
         </div>
       )}
