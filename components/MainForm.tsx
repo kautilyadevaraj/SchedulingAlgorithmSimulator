@@ -130,9 +130,9 @@ export default function MainForm() {
   }
 
   return (
-    <div className="grid grid-cols-3 w-full overflow-hidden">
-      <div className="col-span-2 row-span-2 container p-5 flex flex-col">
-        <div className="max-w-[300px]">
+    <div className="grid grid-cols-2 w-[90vw] overflow-hidden justify-items-center">
+      <div className="row-span-2 container p-5 flex flex-col items-center">
+        <div className="max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               <FormField
@@ -260,11 +260,11 @@ export default function MainForm() {
         </CardContent>
       </Card>
       {finalizedProcesses.length > 0 && (
-        <div className="col-span-3 flex flex-col items-center ">
-          <div className="md:w-[75vw]">
+        <div className="col-span-3 flex flex-col items-center">
+          <div className="md:w-3/4">
             <GanttChart processes={resultSequence} />
           </div>
-          <div className="w-full flex justify-center">
+          <div className="w-[90vw] flex justify-center">
             <div className="pl-10">
               <SummaryTable
                 originalProcesses={finalizedProcesses}
