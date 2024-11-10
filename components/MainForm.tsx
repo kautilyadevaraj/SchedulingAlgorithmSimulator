@@ -199,7 +199,7 @@ export default function MainForm() {
       </div>
       {/* Display the array of processes */}
 
-      <Card className="w-1/2">
+      <Card className="w-[410px]">
         <CardHeader>
           <CardTitle>Processes</CardTitle>
           <CardDescription>Add a process to simulate it</CardDescription>
