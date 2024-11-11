@@ -16,7 +16,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Scheduling Algorithm Simulator",
-  description: "",
+  description: "Scheduling Algorithm Simulator",
 };
 
 export default function RootLayout({
