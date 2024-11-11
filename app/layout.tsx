@@ -15,9 +15,34 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Scheduling Algorithm Simulator",
-  description: "Scheduling Algorithm Simulator",
+  title: "Interactive Scheduling Algorithm Simulator - SRTF, FCFS, and More",
+  description:
+    "Explore and simulate various CPU scheduling algorithms like Shortest Remaining Time First (SRTF), First Come First Serve (FCFS), and more. Perfect for learning and testing CPU scheduling concepts.",
+  keywords: [
+    "scheduling algorithm simulator",
+    "SRTF",
+    "FCFS",
+    "CPU scheduling",
+    "OS algorithms",
+    "interactive simulator",
+  ],
+  openGraph: {
+    title: "Interactive Scheduling Algorithm Simulator",
+    description:
+      "Test and learn CPU scheduling algorithms like SRTF, FCFS, and others with this interactive simulator.",
+    url: "https://scheduling-algorithm-simulator.vercel.app/",
+    siteName: "Scheduling Algorithm Simulator",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Interactive Scheduling Algorithm Simulator",
+    description:
+      "Simulate various CPU scheduling algorithms for learning and testing.",
+  },
 };
+
 
 export default function RootLayout({
   children,
