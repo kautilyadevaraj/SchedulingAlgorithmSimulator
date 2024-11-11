@@ -2,6 +2,8 @@
 
 An interactive simulator for learning and testing various CPU scheduling algorithms, including Shortest Remaining Time First (SRTF) and First Come First Serve (FCFS). This project provides a visual and dynamic way to understand scheduling algorithms, making it ideal for students and enthusiasts interested in operating systems.
 
+**[View the live application here](https://scheduling-algorithm-simulator.vercel.app/)**.
+
 ## Table of Contents
 - [Overview](#overview)
 - [Features](#features)
@@ -15,8 +17,6 @@ An interactive simulator for learning and testing various CPU scheduling algorit
 ## Overview
 
 This project is a web-based simulator for CPU scheduling algorithms. It allows users to input different processes with specific attributes (arrival time, burst time, etc.) and visualize how these processes are scheduled according to the chosen scheduling algorithm.
-
-**[View the live application here](https://scheduling-algorithm-simulator.vercel.app/)**.
 
 ## Features
 
