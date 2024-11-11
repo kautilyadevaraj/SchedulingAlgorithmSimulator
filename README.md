@@ -16,6 +16,8 @@ An interactive simulator for learning and testing various CPU scheduling algorit
 
 This project is a web-based simulator for CPU scheduling algorithms. It allows users to input different processes with specific attributes (arrival time, burst time, etc.) and visualize how these processes are scheduled according to the chosen scheduling algorithm.
 
+**[View the live application here](https://scheduling-algorithm-simulator.vercel.app/)**.
+
 ## Features
 
 - **Interactive Form**: Add and configure processes with attributes such as arrival time, burst time, and background color.
