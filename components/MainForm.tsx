@@ -135,8 +135,8 @@ export default function MainForm() {
   }
 
   return (
-    <div className="grid grid-cols-2 w-full overflow-hidden justify-items-center">
-      <div className="row-span-2 container pl-14 flex flex-col items-center">
+    <div className="grid grid-cols-2 w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
+      <div className="row-span-2 col-span-2 md:col-span-1 container md:pl-14 flex flex-col items-center">
         <div className="max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -204,7 +204,7 @@ export default function MainForm() {
       </div>
       {/* Display the array of processes */}
 
-      <Card className="w-[410px]">
+      <Card className="md:w-[410px] col-span-2 md:col-span-1">
         <CardHeader>
           <CardTitle>Processes</CardTitle>
           <CardDescription>Add a process to simulate it</CardDescription>
@@ -242,10 +242,10 @@ export default function MainForm() {
               </div>
             ))}
           </div>
-          <div className="flex justify-around w-full">
+          <div className="flex flex-col space-y-4 items-center">
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline">Add Process</Button>
+                <Button variant="outline" className="w-fit">Add Process</Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
                 <ProcessForm
@@ -258,7 +258,7 @@ export default function MainForm() {
                 />
               </PopoverContent>
             </Popover>
-            <Button onClick={() => setProcesses([])}>
+            <Button onClick={() => setProcesses([])} className="w-fit">
               Clear all processes
             </Button>
           </div>
@@ -266,7 +266,7 @@ export default function MainForm() {
       </Card>
       {finalizedProcesses.length > 0 && (
         <div ref={summaryRef} className="col-span-3 flex flex-col items-center">
-          <div className="md:w-3/4">
+          <div className="md:w-3/4 w-full">
             <GanttChart processes={resultSequence} />
           </div>
           <div className="w-[90vw] flex justify-center">
