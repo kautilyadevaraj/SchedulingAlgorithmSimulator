@@ -1,4 +1,4 @@
-# Scheduling Algorithm Simulator
+# CPU Scheduling Algorithm Simulator
 
 An interactive simulator for learning and testing various CPU scheduling algorithms, including First Come First Serve (FCFS), Round Robin(RR), Shortest Job First(SJF) and Shortest Remaining Time First(SRTF). This project provides a visual and dynamic way to understand scheduling algorithms, making it ideal for students and enthusiasts interested in operating systems.
 
