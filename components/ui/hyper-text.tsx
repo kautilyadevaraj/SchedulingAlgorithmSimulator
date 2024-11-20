@@ -28,7 +28,6 @@ export default function HyperText({
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: 3 },
   },
-  className,
   animateOnLoad = true,
 }: HyperTextProps) {
   const [displayText, setDisplayText] = useState(text.split(""));
