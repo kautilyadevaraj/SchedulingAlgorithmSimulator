@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "interactive simulator",
   ],
   openGraph: {
-    title: "Interactive Scheduling Algorithm Simulator",
+    title: "CPU Scheduling Algorithm Simulator",
     description:
       "Test and learn CPU scheduling algorithms like SRTF, FCFS, and others with this interactive simulator.",
     url: "https://scheduling-algorithm-simulator.vercel.app/",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Interactive Scheduling Algorithm Simulator",
+    title: "CPU Scheduling Algorithm Simulator",
     description:
       "Simulate various CPU scheduling algorithms for learning and testing.",
   },
