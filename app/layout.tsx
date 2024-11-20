@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const inter = JetBrains_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Interactive Scheduling Algorithm Simulator - SRTF, FCFS, and More",
+  title: "CPU Scheduling Algorithm Simulator",
   description:
     "Explore and simulate various CPU scheduling algorithms like Shortest Remaining Time First (SRTF), First Come First Serve (FCFS), and more. Perfect for learning and testing CPU scheduling concepts.",
   keywords: [
