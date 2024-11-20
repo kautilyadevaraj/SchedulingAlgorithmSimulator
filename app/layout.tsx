@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
+import { JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/react";
+import { cn } from "@/lib/utils";
+
+const inter = JetBrains_Mono({ subsets: ["latin"] });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -59,17 +64,20 @@ export default function RootLayout({
       />
 
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
+        className={cn("antialiased" , inter.className)}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-        <Analytics />
+        <div className="flex flex-col min-h-screen">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <main className="flex-grow">{children}</main>
+          </ThemeProvider>
+          <Footer />
+        </div>
+        <Analytics/>
       </body>
     </html>
   );

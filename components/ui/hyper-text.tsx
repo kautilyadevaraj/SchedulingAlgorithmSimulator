@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, Variants } from "framer-motion";
+import { JetBrains_Mono } from "next/font/google";
 
 import { cn } from "@/lib/utils";
+
+const inter = JetBrains_Mono({ subsets: ["latin"] });
 
 interface HyperTextProps {
   text: string;
@@ -77,7 +80,7 @@ export default function HyperText({
         {displayText.map((letter, i) => (
           <motion.h1
             key={i}
-            className={cn("font-mono", letter === " " ? "w-3" : "", className)}
+            className={cn("font-mono", letter === " " ? "w-3" : "", inter.className)}
             {...framerProps}
           >
             {letter.toUpperCase()}

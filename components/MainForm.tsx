@@ -137,7 +137,7 @@ export default function MainForm() {
   return (
     <div className="grid grid-cols-2 w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
       <div className="row-span-2 col-span-2 md:col-span-1 container md:pl-14 flex flex-col items-center">
-        <div className="max-w-[300px] border p-4 rounded-xl">
+        <div className="md:max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               <FormField
@@ -145,7 +145,7 @@ export default function MainForm() {
                 name="algorithm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
+                    <FormLabel >
                       Select a scheduling algorithm to simulate.
                     </FormLabel>
                     <Select
@@ -204,13 +204,13 @@ export default function MainForm() {
       </div>
       {/* Display the array of processes */}
 
-      <Card className="md:w-[410px] col-span-2 md:col-span-1">
+      <Card className="md:w-[500px] col-span-2 md:col-span-1">
         <CardHeader>
           <CardTitle>Processes</CardTitle>
           <CardDescription>Add a process to simulate it</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 w-full">
-          <div className="flex justify-start flex-wrap max-w-[360px]">
+          <div className="flex justify-start flex-wrap md:max-w-[500px]">
             {processes.map((process, index) => (
               <div key={index}>
                 <div className="flex items-center justify-between space-x-4 p-2">

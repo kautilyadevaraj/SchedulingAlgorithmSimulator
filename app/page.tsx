@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import HyperText from "@/components/ui/hyper-text";
 
+
 import Particles from "@/components/ui/particles";
 
 export default function Home() {
@@ -15,8 +16,8 @@ export default function Home() {
     setColor(theme === "dark" ? "#ffffff" : "#000000");
   }, [theme]);
   return (
-    <div className="container max-w-full overflow-hidden">
-      <main className="flex flex-col justify-center sm:items-start p-5 grow-0 overflow-hidden">
+    <div className="container max-w-full">
+      <main className="flex flex-col justify-center sm:items-start p-5 grow-0">
         {/* <AnimatedGridPattern
           numSquares={30}
           maxOpacity={0.3}
@@ -42,6 +43,7 @@ export default function Home() {
           refresh
         />
         <MainForm />
+        
       </main>
     </div>
   );

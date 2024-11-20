@@ -162,11 +162,21 @@ if (algorithm === "fCFS") {
         </TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px] text-center">Process ID</TableHead>
-            <TableHead className="text-center">Arrival Time</TableHead>
-            <TableHead className="text-center">Burst Time</TableHead>
-            <TableHead className="text-center">Waiting Time</TableHead>
-            <TableHead className="text-center">Turnaround Time</TableHead>
+            <TableHead className="w-[100px] text-center">
+              <p className="text-xs md:text-lg">Process ID</p>
+            </TableHead>
+            <TableHead className="text-center">
+              <p className="text-xs md:text-lg">Arrival Time</p>
+            </TableHead>
+            <TableHead className="text-center">
+              <p className="text-xs md:text-lg">Burst Time</p>
+            </TableHead>
+            <TableHead className="text-center">
+              <p className="text-xs md:text-lg">Waiting Time</p>
+            </TableHead>
+            <TableHead className="text-center">
+              <p className="text-xs md:text-lg">Turnaround Time</p>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -205,7 +215,6 @@ if (algorithm === "fCFS") {
             <TableCell className="text-center">{totalWaitingTime}</TableCell>
             <TableCell className="text-center">{totalTurnaroundTime}</TableCell>
           </TableRow>
-          
         </TableFooter>
       </Table>
     </motion.div>
