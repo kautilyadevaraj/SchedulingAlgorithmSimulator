@@ -113,9 +113,7 @@ export default function MainForm() {
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     let sequence: Process[] = [];
-    console.log(processes);
     if (processes.length === 0) {
-      console.log("if condition triggered!");
       toast.error("No processes added!", {
         position: "top-center",
       });
@@ -216,7 +214,7 @@ export default function MainForm() {
       </div>
       {/* Display the array of processes */}
 
-      <Card className="md:w-[500px] col-span-2 md:col-span-1">
+      <Card className="md:w-[500px] w-full col-span-2 md:col-span-1">
         <CardHeader>
           <CardTitle>Processes</CardTitle>
           <CardDescription>Add a process to simulate it</CardDescription>
