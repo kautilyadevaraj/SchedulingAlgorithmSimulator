@@ -209,7 +209,7 @@ if (algorithm === "fCFS") {
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={3} className="pl-8">
+            <TableCell colSpan={3} className="pl-3 text-xs">
               Total
             </TableCell>
             <TableCell className="text-center">{totalWaitingTime}</TableCell>
