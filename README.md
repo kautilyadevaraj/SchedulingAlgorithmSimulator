@@ -42,7 +42,7 @@ To set up the project locally, ensure you have [Node.js](https://nodejs.org/en/d
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/scheduling-algorithm-simulator.git
+git clone https://github.com/kautilyadevaraj/SchedulingAlgorithmSimulator
 cd scheduling-algorithm-simulator
 ```
 

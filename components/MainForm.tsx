@@ -36,7 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "./ui/input";
-import {useRef , useState } from "react";
+import { useRef, useState } from "react";
 import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
 import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
@@ -44,6 +44,8 @@ import { shortestJobFirst } from "@/lib/ShortestJobFirst";
 import { roundRobin } from "@/lib/RoundRobin";
 import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
 import SummaryStatistics from "./SummaryStatistics";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const FormSchema = z.object({
   algorithm: z.string({
@@ -111,6 +113,14 @@ export default function MainForm() {
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     let sequence: Process[] = [];
+    console.log(processes);
+    if (processes.length === 0) {
+      console.log("if condition triggered!");
+      toast.error("No processes added!", {
+        position: "top-center",
+      });
+      return;
+    }
     switch (data.algorithm) {
       case "fCFS":
         sequence = firstComeFirstServe(processes);
@@ -129,14 +139,16 @@ export default function MainForm() {
 
     setResultSequence(sequence);
     setFinalizedProcesses([...processes]);
-     setTimeout(() => {
-       summaryRef.current?.scrollIntoView({ behavior: "smooth" });
-     }, 0);
+    setTimeout(() => {
+      summaryRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 0);
   }
 
   return (
     <div className="grid grid-cols-2 w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
+      
       <div className="row-span-2 col-span-2 md:col-span-1 container md:pl-14 flex flex-col items-center">
+        <ToastContainer className="bg-dark"/>
         <div className="md:max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -145,7 +157,7 @@ export default function MainForm() {
                 name="algorithm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel >
+                    <FormLabel>
                       Select a scheduling algorithm to simulate.
                     </FormLabel>
                     <Select
@@ -245,7 +257,9 @@ export default function MainForm() {
           <div className="flex flex-col space-y-4 items-center">
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-fit">Add Process</Button>
+                <Button variant="outline" className="w-fit">
+                  Add Process
+                </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
                 <ProcessForm
