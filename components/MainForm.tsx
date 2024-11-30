@@ -281,8 +281,8 @@ export default function MainForm() {
           <div className="md:w-3/4 w-full">
             <GanttChart processes={resultSequence} />
           </div>
-          <div className="w-[90vw] flex justify-center">
-            <div className="pl-10">
+          <div className="w-[90vw] flex justify-center flex-wrap md:flex-nowrap">
+            <div className="md:pl-10">
               <SummaryTable
                 originalProcesses={finalizedProcesses}
                 scheduledProcesses={resultSequence}
