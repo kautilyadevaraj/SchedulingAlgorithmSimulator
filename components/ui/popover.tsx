@@ -14,7 +14,7 @@ const PopoverContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(
   (
-    { className, align = "center", side = "bottom", sideOffset = 4, ...props },
+    { className, align = "center", sideOffset = 4, ...props },
     ref
   ) => {
     // Add dynamic side based on screen size using `useMediaQuery`
