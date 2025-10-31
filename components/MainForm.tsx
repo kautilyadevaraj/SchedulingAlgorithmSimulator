@@ -143,9 +143,9 @@ export default function MainForm() {
   }
 
   return (
-    <div className="grid grid-cols-2 w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
+    <div className="grid grid-cols-2 w-full max-w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
       
-      <div className="row-span-2 col-span-2 md:col-span-1 container md:pl-14 flex flex-col items-center">
+      <div className="row-span-2 col-span-2 md:col-span-1 max-w-full md:pl-14 flex flex-col items-center px-4">
         <ToastContainer className="bg-dark"/>
         <div className="md:max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
@@ -214,7 +214,7 @@ export default function MainForm() {
       </div>
       {/* Display the array of processes */}
 
-      <Card className="md:w-[500px] w-full col-span-2 md:col-span-1">
+      <Card className="md:w-[500px] w-full max-w-full col-span-2 md:col-span-1 mx-4">
         <CardHeader>
           <CardTitle>Processes</CardTitle>
           <CardDescription>Add a process to simulate it</CardDescription>
