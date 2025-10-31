@@ -186,6 +186,23 @@ export default function MainForm() {
                   </FormItem>
                 )}
               />
+              {/* Algorithm descriptions */}
+              {selectedAlgorithm && (
+                <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
+                  {selectedAlgorithm === "fCFS" && (
+                    <p>Processes are executed in the order they arrive. Simple but may cause long waiting times.</p>
+                  )}
+                  {selectedAlgorithm === "SJF" && (
+                    <p>Executes the shortest job first. Minimizes average waiting time but may cause starvation.</p>
+                  )}
+                  {selectedAlgorithm === "RR" && (
+                    <p>Each process gets a fixed time quantum in circular order. Fair and responsive for time-sharing systems.</p>
+                  )}
+                  {selectedAlgorithm === "SRTF" && (
+                    <p>Preemptive version of SJF. Always executes the process with the shortest remaining time.</p>
+                  )}
+                </div>
+              )}
               {/* Conditionally render time quantum input */}
               {selectedAlgorithm === "RR" && (
                 <FormField
