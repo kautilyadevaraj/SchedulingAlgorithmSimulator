@@ -16,6 +16,14 @@ import { Input } from "@/components/ui/input";
 import { GradientPicker } from "./GradientPicker";
 import { useEffect } from "react";
 
+// Generate a random color (with high saturation)
+const generateRandomColor = () => {
+  const hue = Math.floor(Math.random() * 360);
+  const saturation = 60 + Math.floor(Math.random() * 40); // 60-100%
+  const lightness = 50 + Math.floor(Math.random() * 20); // 50-70%
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
 type Process = {
   arrival_time: number;
   burst_time: number;
@@ -45,17 +53,26 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
     defaultValues: initialValues || {
       arrival_time: 0,
       burst_time: 1,
-      background: "#ffe83f",
+      background: generateRandomColor(),
     },
   });
 
   useEffect(() => {
-    if (initialValues) form.reset(initialValues);
+    if (initialValues) {
+      form.reset(initialValues);
+    } else {
+      // Generate new random color for new process
+      form.setValue("background", generateRandomColor());
+    }
   }, [initialValues, form]);
 
   const onSubmit = (data: z.infer<typeof ProcessSchema>) => {
     addProcess(data);
-    form.reset();
+    form.reset({
+      arrival_time: 0,
+      burst_time: 1,
+      background: generateRandomColor(),
+    });
   };
 
   return (
