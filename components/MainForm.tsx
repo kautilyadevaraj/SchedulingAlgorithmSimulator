@@ -83,6 +83,8 @@ export default function MainForm() {
 
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
 
+  const [descriptionRevealed, setDescriptionRevealed] = useState(false);
+
   const summaryRef = useRef<HTMLDivElement>(null);
 
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
@@ -162,6 +164,7 @@ export default function MainForm() {
                       onValueChange={(value) => {
                         field.onChange(value);
                         setSelectedAlgorithm(value); // track selected algorithm
+                        setDescriptionRevealed(false); // reset blur on new selection
                       }}
                       defaultValue={field.value}
                     >
@@ -186,6 +189,32 @@ export default function MainForm() {
                   </FormItem>
                 )}
               />
+              {/* Algorithm descriptions */}
+              {selectedAlgorithm && (
+                <div 
+                  className="text-sm text-muted-foreground p-3 bg-muted rounded-md cursor-pointer transition-all select-none"
+                  onClick={() => setDescriptionRevealed(!descriptionRevealed)}
+                  title="Click to reveal description"
+                >
+                  <p className={descriptionRevealed ? "" : "blur-sm"}>
+                    {selectedAlgorithm === "fCFS" && (
+                      "Processes are executed in the order they arrive. Simple but may cause long waiting times."
+                    )}
+                    {selectedAlgorithm === "SJF" && (
+                      "Executes the shortest job first. Minimizes average waiting time but may cause starvation."
+                    )}
+                    {selectedAlgorithm === "RR" && (
+                      "Each process gets a fixed time quantum in circular order. Fair and responsive for time-sharing systems."
+                    )}
+                    {selectedAlgorithm === "SRTF" && (
+                      "Preemptive version of SJF. Always executes the process with the shortest remaining time."
+                    )}
+                  </p>
+                  {!descriptionRevealed && (
+                    <p className="text-xs text-center mt-1 opacity-70">Click to reveal</p>
+                  )}
+                </div>
+              )}
               {/* Conditionally render time quantum input */}
               {selectedAlgorithm === "RR" && (
                 <FormField
