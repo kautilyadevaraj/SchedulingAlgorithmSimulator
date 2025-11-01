@@ -1,7 +1,7 @@
 "use client";
 
 import MainForm from "@/components/MainForm";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useTheme } from "next-themes";
 import HyperText from "@/components/ui/hyper-text";
 
@@ -42,7 +42,9 @@ export default function Home() {
           color={color}
           refresh
         />
-        <MainForm />
+        <Suspense fallback={<div>Loading...</div>}>
+          <MainForm />
+        </Suspense>
         
       </main>
     </div>
