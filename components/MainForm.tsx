@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 
 import { Pencil1Icon } from "@radix-ui/react-icons";
+import { Dices } from "lucide-react";
 import { ProcessForm } from "@/components/ProcessForm";
 import {
   Popover,
@@ -111,6 +112,40 @@ export default function MainForm() {
   const handleEditProcess = (index: number) => {
     setCurrentEditIndex(index);
     setPopoverOpen(true); // Open popover for editing
+  };
+
+  const generateRandomColor = () => {
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = 60 + Math.floor(Math.random() * 40); // 60-100%
+    const lightness = 50 + Math.floor(Math.random() * 20); // 50-70%
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  };
+
+  const generateRandomProcesses = () => {
+    const numProcesses = Math.floor(Math.random() * 3) + 3; // 3-5 processes
+    const newProcesses: Process[] = [];
+    
+    for (let i = 0; i < numProcesses; i++) {
+      newProcesses.push({
+        process_id: i + 1,
+        arrival_time: Math.floor(Math.random() * 10), // 0-9
+        burst_time: Math.floor(Math.random() * 10) + 1, // 1-10
+        background: generateRandomColor(),
+      });
+    }
+    
+    // Sort by arrival time for better visualization
+    newProcesses.sort((a, b) => a.arrival_time - b.arrival_time);
+    
+    // Reassign process_ids after sorting to maintain correct color mapping
+    newProcesses.forEach((process, index) => {
+      process.process_id = index + 1;
+    });
+    
+    setProcesses(newProcesses);
+    toast.success(`Generated ${numProcesses} random processes!`, {
+      position: "top-center",
+    });
   };
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -245,8 +280,20 @@ export default function MainForm() {
 
       <Card className="md:w-[500px] w-full max-w-full col-span-2 md:col-span-1 mx-4">
         <CardHeader>
-          <CardTitle>Processes</CardTitle>
-          <CardDescription>Add a process to simulate it</CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Processes</CardTitle>
+              <CardDescription>Add a process to simulate it</CardDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={generateRandomProcesses}
+              title="Generate random processes"
+            >
+              <Dices className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="grid gap-6 w-full">
           <div className="flex justify-start flex-wrap md:max-w-[500px]">
@@ -258,6 +305,7 @@ export default function MainForm() {
                       className="preview flex justify-center items-center p-1 h-[50px] w-[50px] rounded !bg-cover !bg-center transition-all"
                       style={{
                         background: process.background,
+                        textShadow: "0 1px 3px rgba(0, 0, 0, 0.7)",
                       }}
                     >
                       <Pencil1Icon
