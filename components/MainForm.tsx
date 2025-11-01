@@ -308,7 +308,7 @@ export default function MainForm() {
       {finalizedProcesses.length > 0 && (
         <div ref={summaryRef} className="col-span-3 flex flex-col items-center">
           <div className="md:w-3/4 w-full">
-            <GanttChart processes={resultSequence} />
+            <GanttChart processes={resultSequence} algorithm={selectedAlgorithm} />
           </div>
           <div className="w-[90vw] flex justify-center flex-wrap md:flex-nowrap">
             <div className="md:pl-10">
