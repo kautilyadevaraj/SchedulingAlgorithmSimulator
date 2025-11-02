@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 
 import { Pencil1Icon } from "@radix-ui/react-icons";
+import { Share2 } from "lucide-react";
 import { Dices } from "lucide-react";
 import { ProcessForm } from "@/components/ProcessForm";
 import {
@@ -37,7 +38,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "./ui/input";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
 import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
@@ -80,9 +82,15 @@ type Process = {
 };
 
 export default function MainForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
+
+  // Watch quantum so URL stays in sync when it changes
+  const quantumValue = form.watch("quantum");
 
   const [processes, setProcesses] = useState<Process[]>([]);
 
@@ -98,7 +106,111 @@ export default function MainForm() {
 
   const [descriptionRevealed, setDescriptionRevealed] = useState(false);
 
+  const [hasLoadedFromUrl, setHasLoadedFromUrl] = useState(false);
+  const [shouldAutoSubmit, setShouldAutoSubmit] = useState(false);
+
   const summaryRef = useRef<HTMLDivElement>(null);
+
+  // Helper to normalize algorithm values from URL to internal values
+  const normalizeAlgorithm = (algo?: string | null) => {
+    if (!algo) return null;
+    const a = algo.toLowerCase();
+    if (a === "fcfs" || a === "firstcomefirstserve" || a === "first_come_first_serve")
+      return "FCFS"; // internal value used in Select
+    if (a === "rr" || a === "roundrobin" || a === "round_robin") return "RR";
+    if (a === "sjf" || a === "shortestjobfirst" || a === "shortest_job_first")
+      return "SJF";
+    if (
+      a === "srtf" ||
+      a === "shortestremainingtimefirst" ||
+      a === "shortest_remaining_time_first"
+    )
+      return "SRTF";
+    return null;
+  };
+
+  // Load data from URL on mount (only once)
+  useEffect(() => {
+    if (hasLoadedFromUrl) return; // Prevent re-running
+
+    const algoRaw = searchParams.get("algo");
+    const algo = normalizeAlgorithm(algoRaw);
+    const quantum = searchParams.get("quantum");
+    const processesData = searchParams.get("processes");
+
+    if (algo) {
+      form.setValue("algorithm", algo);
+      setSelectedAlgorithm(algo);
+    }
+
+    if (quantum && algo === "RR") {
+      form.setValue("quantum", parseInt(quantum));
+    }
+
+    if (processesData) {
+      try {
+        // Handle potential double-encoding gracefully
+        const decoded = decodeURIComponent(processesData);
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(decoded);
+        } catch {
+          parsed = JSON.parse(decodeURIComponent(decoded));
+        }
+        if (Array.isArray(parsed)) {
+          setProcesses(parsed as Process[]);
+        } else {
+          console.error("Invalid processes data from URL");
+        }
+        
+        // If we have both algo and processes, trigger auto-submit
+        if (algo && Array.isArray(parsed) && parsed.length > 0) {
+          setShouldAutoSubmit(true);
+        }
+      } catch (error) {
+        console.error("Failed to parse processes from URL:", error);
+      }
+    }
+
+    setHasLoadedFromUrl(true);
+  }, []); // Run only once on mount
+
+  // Auto-submit when loaded from URL
+  useEffect(() => {
+    if (shouldAutoSubmit && processes.length > 0 && selectedAlgorithm) {
+      // Small delay to ensure form is populated
+      setTimeout(() => {
+        const formData = form.getValues();
+        if (formData.algorithm) {
+          onSubmit(formData as z.infer<typeof FormSchema>);
+          setShouldAutoSubmit(false); // Only auto-submit once
+        }
+      }, 200);
+    }
+  }, [shouldAutoSubmit, processes.length, selectedAlgorithm]);
+
+  // Update URL when processes, algorithm or quantum changes
+  useEffect(() => {
+    // Skip URL update if we haven't finished initial load
+    if (!hasLoadedFromUrl) return;
+
+    const params = new URLSearchParams();
+
+    if (selectedAlgorithm) {
+      params.set("algo", selectedAlgorithm);
+    }
+
+    if (selectedAlgorithm === "RR" && quantumValue != null && !Number.isNaN(quantumValue)) {
+      params.set("quantum", String(quantumValue));
+    }
+
+    if (processes.length > 0) {
+      params.set("processes", encodeURIComponent(JSON.stringify(processes)));
+    }
+
+    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [processes, selectedAlgorithm, quantumValue, router, hasLoadedFromUrl]);
 
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
@@ -126,6 +238,26 @@ export default function MainForm() {
     setPopoverOpen(true); // Open popover for editing
   };
 
+  const handleShare = async () => {
+    if (processes.length === 0 || !selectedAlgorithm) {
+      toast.error("Add processes and select an algorithm first!", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard!", {
+        position: "top-center",
+      });
+    } catch {
+      toast.error("Failed to copy link", {
+        position: "top-center",
+      });
+    }
+  }
   const generateRandomColor = () => {
     const hue = Math.floor(Math.random() * 360);
     const saturation = 60 + Math.floor(Math.random() * 40); // 60-100%
@@ -165,7 +297,7 @@ export default function MainForm() {
       return;
     }
     switch (data.algorithm) {
-      case "fCFS":
+      case "FCFS":
         sequence = firstComeFirstServe(processes);
         break;
       case "SJF":
@@ -208,7 +340,7 @@ export default function MainForm() {
                         setSelectedAlgorithm(value); // track selected algorithm
                         setDescriptionRevealed(false); // reset blur on new selection
                       }}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -216,7 +348,7 @@ export default function MainForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="fCFS">
+                        <SelectItem value="FCFS">
                           First Come First Serve
                         </SelectItem>
                         <SelectItem value="RR">Round Robin</SelectItem>
@@ -239,7 +371,7 @@ export default function MainForm() {
                   title="Click to reveal description"
                 >
                   <p className={descriptionRevealed ? "" : "blur-sm"}>
-                    {selectedAlgorithm === "fCFS" && (
+                    {selectedAlgorithm === "FCFS" && (
                       "Processes are executed in the order they arrive. Simple but may cause long waiting times."
                     )}
                     {selectedAlgorithm === "SJF" && (
@@ -279,7 +411,19 @@ export default function MainForm() {
                   )}
                 />
               )}
-              <Button type="submit">Submit</Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1">Submit</Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon"
+                  onClick={handleShare}
+                  title="Share configuration"
+                  disabled={processes.length === 0 || !selectedAlgorithm}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
             </form>
           </Form>
         </div>
@@ -355,7 +499,14 @@ export default function MainForm() {
                 />
               </PopoverContent>
             </Popover>
-            <Button onClick={() => setProcesses([])} className="w-fit">
+            <Button 
+              onClick={() => {
+                setProcesses([]);
+                setResultSequence([]);
+                setFinalizedProcesses([]);
+              }} 
+              className="w-fit"
+            >
               Clear all processes
             </Button>
           </div>

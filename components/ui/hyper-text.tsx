@@ -75,7 +75,7 @@ export default function HyperText({
       className="overflow-hidden md:text-4xl py-2 flex cursor-default "
       onMouseEnter={triggerAnimation}
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
         {displayText.map((letter, i) => (
           <motion.h1
             key={i}
