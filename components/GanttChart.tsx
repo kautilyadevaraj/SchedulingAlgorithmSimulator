@@ -47,6 +47,9 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes, algorithm }) => {
     return false;
   };
 
+  // Check if there are any preemptions in the entire sequence
+  const hasPreemptions = processes.some((_, index) => isPreempted(index));
+
   // Reset animation key when processes change
   useEffect(() => {
     setAnimationKey((prevKey) => prevKey + 1);
@@ -157,6 +160,12 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes, algorithm }) => {
             );
           })}
         </div>
+        {/* Preemption info (only shown if preemptions occurred) */}
+        {hasPreemptions && (
+          <div className="text-xs text-muted-foreground text-center mt-2 px-2">
+            Vertical red lines indicate preemption
+          </div>
+        )}
       </div>
     </div>
   );
