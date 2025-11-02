@@ -45,8 +45,7 @@ import { shortestJobFirst } from "@/lib/ShortestJobFirst";
 import { roundRobin } from "@/lib/RoundRobin";
 import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
 import SummaryStatistics from "./SummaryStatistics";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "sonner";
 
 const FormSchema = z.object({
   algorithm: z.string({
@@ -143,17 +142,13 @@ export default function MainForm() {
     });
     
     setProcesses(newProcesses);
-    toast.success(`Generated ${numProcesses} random processes!`, {
-      position: "top-center",
-    });
+    toast.success(`Generated ${numProcesses} random processes!`);
   };
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     let sequence: Process[] = [];
     if (processes.length === 0) {
-      toast.error("No processes added!", {
-        position: "top-center",
-      });
+      toast.error("No processes added!");
       return;
     }
     switch (data.algorithm) {
@@ -183,7 +178,6 @@ export default function MainForm() {
     <div className="grid grid-cols-2 w-full max-w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
       
       <div className="row-span-2 col-span-2 md:col-span-1 max-w-full md:pl-14 flex flex-col items-center px-4">
-        <ToastContainer className="bg-dark"/>
         <div className="md:max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
