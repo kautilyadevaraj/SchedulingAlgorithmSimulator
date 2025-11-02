@@ -80,6 +80,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
                     ? { backgroundImage: process.background }
                     : { backgroundColor: process.background }),
                   backgroundSize: "cover",
+                  textShadow: "0 1px 3px rgba(0, 0, 0, 0.7)",
                 }}
                 variants={itemVariants}
               >

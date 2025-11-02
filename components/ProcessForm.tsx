@@ -31,12 +31,14 @@ type Process = {
 };
 
 const ProcessSchema = z.object({
-  arrival_time: z.coerce.number().lte(100, {
-    message: "Arrival Time cannot be greater than 100.",
-  }),
-  burst_time: z.coerce.number().lte(100, {
-    message: "Burst Time cannot be greater than 100.",
-  }),
+  arrival_time: z.coerce
+    .number()
+    .gt(-1, { message: "Arrival Time cannot be negative." }) // allow 0, disallow negatives
+    .lte(100, { message: "Arrival Time cannot be greater than 100." }),
+  burst_time: z.coerce
+    .number()
+    .gt(0, { message: "Burst Time must be greater than 0." }) // strictly positive
+    .lte(100, { message: "Burst Time cannot be greater than 100." }),
   background: z.string().nonempty({
     message: "Please select a background.",
   }),
