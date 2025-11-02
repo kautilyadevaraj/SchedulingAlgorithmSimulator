@@ -47,17 +47,30 @@ import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
 import SummaryStatistics from "./SummaryStatistics";
 import { toast } from "sonner";
 
-const FormSchema = z.object({
-  algorithm: z.string({
-    required_error: "Please select an algorithm to display.",
-  }),
-  quantum: z.coerce
-    .number()
-    .lte(100, {
-      message: "Quantum cannot be greater than 100.",
-    })
-    .optional(),
-});
+const FormSchema = z
+  .object({
+    algorithm: z.string({
+      required_error: "Please select an algorithm to display.",
+    }),
+    quantum: z.coerce
+      .number()
+      .lte(100, { message: "Quantum cannot be greater than 100." })
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // If Round Robin is selected, quantum must exist and be > 0
+      if (data.algorithm === "RR") {
+        return data.quantum !== undefined && data.quantum > 0;
+      }
+      return true;
+    },
+    {
+      message: "Time Quantum must be greater than 0.",
+      path: ["quantum"],
+    }
+  );
+
 
 type Process = {
   process_id: number;
@@ -255,6 +268,7 @@ export default function MainForm() {
                       <FormControl>
                         <Input
                           type="number"
+                          min={1}
                           {...field}
                           placeholder="Time Quantum"
                           className="input-field"
