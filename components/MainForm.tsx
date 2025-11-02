@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 
 import { Pencil1Icon } from "@radix-ui/react-icons";
+import { Share2 } from "lucide-react";
 import { ProcessForm } from "@/components/ProcessForm";
 import {
   Popover,
@@ -220,6 +221,27 @@ export default function MainForm() {
     setPopoverOpen(true); // Open popover for editing
   };
 
+  const handleShare = async () => {
+    if (processes.length === 0 || !selectedAlgorithm) {
+      toast.error("Add processes and select an algorithm first!", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard!", {
+        position: "top-center",
+      });
+    } catch (error) {
+      toast.error("Failed to copy link", {
+        position: "top-center",
+      });
+    }
+  };
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
     let sequence: Process[] = [];
     if (processes.length === 0) {
@@ -343,7 +365,19 @@ export default function MainForm() {
                   )}
                 />
               )}
-              <Button type="submit">Submit</Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1">Submit</Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon"
+                  onClick={handleShare}
+                  title="Share configuration"
+                  disabled={processes.length === 0 || !selectedAlgorithm}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
             </form>
           </Form>
         </div>
