@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/react";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = JetBrains_Mono({ subsets: ["latin"] });
 
@@ -62,6 +63,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <main className="flex-grow">{children}</main>
+            <Toaster richColors position="top-center" />
           </ThemeProvider>
           <Footer />
         </div>

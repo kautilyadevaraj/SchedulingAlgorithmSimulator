@@ -45,20 +45,32 @@ import { shortestJobFirst } from "@/lib/ShortestJobFirst";
 import { roundRobin } from "@/lib/RoundRobin";
 import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
 import SummaryStatistics from "./SummaryStatistics";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "sonner";
 
-const FormSchema = z.object({
-  algorithm: z.string({
-    required_error: "Please select an algorithm to display.",
-  }),
-  quantum: z.coerce
-    .number()
-    .lte(100, {
-      message: "Quantum cannot be greater than 100.",
-    })
-    .optional(),
-});
+const FormSchema = z
+  .object({
+    algorithm: z.string({
+      required_error: "Please select an algorithm to display.",
+    }),
+    quantum: z.coerce
+      .number()
+      .lte(100, { message: "Quantum cannot be greater than 100." })
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // If Round Robin is selected, quantum must exist and be > 0
+      if (data.algorithm === "RR") {
+        return data.quantum !== undefined && data.quantum > 0;
+      }
+      return true;
+    },
+    {
+      message: "Time Quantum must be greater than 0.",
+      path: ["quantum"],
+    }
+  );
+
 
 type Process = {
   process_id: number;
@@ -143,17 +155,13 @@ export default function MainForm() {
     });
     
     setProcesses(newProcesses);
-    toast.success(`Generated ${numProcesses} random processes!`, {
-      position: "top-center",
-    });
+    toast.success(`Generated ${numProcesses} random processes!`);
   };
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     let sequence: Process[] = [];
     if (processes.length === 0) {
-      toast.error("No processes added!", {
-        position: "top-center",
-      });
+      toast.error("No processes added!");
       return;
     }
     switch (data.algorithm) {
@@ -183,7 +191,6 @@ export default function MainForm() {
     <div className="grid grid-cols-2 w-full max-w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
       
       <div className="row-span-2 col-span-2 md:col-span-1 max-w-full md:pl-14 flex flex-col items-center px-4">
-        <ToastContainer className="bg-dark"/>
         <div className="md:max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -261,6 +268,7 @@ export default function MainForm() {
                       <FormControl>
                         <Input
                           type="number"
+                          min={1}
                           {...field}
                           placeholder="Time Quantum"
                           className="input-field"
