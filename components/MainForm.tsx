@@ -253,6 +253,7 @@ export default function MainForm() {
         position: "top-center",
       });
     }
+  }
   const generateRandomColor = () => {
     const hue = Math.floor(Math.random() * 360);
     const saturation = 60 + Math.floor(Math.random() * 40); // 60-100%
