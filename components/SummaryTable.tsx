@@ -187,6 +187,7 @@ if (algorithm === "fCFS") {
                   className="preview flex justify-center items-center p-1 h-[25px] w-[25px] rounded !bg-cover !bg-center transition-all"
                   style={{
                     background: process.background,
+                    textShadow: "0 1px 3px rgba(0, 0, 0, 0.7)",
                   }}
                 >
                   {process.process_id}
