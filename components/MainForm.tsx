@@ -150,14 +150,18 @@ export default function MainForm() {
     if (processesData) {
       try {
         // Handle potential double-encoding gracefully
-        let decoded = decodeURIComponent(processesData);
-        let parsed: any;
+        const decoded = decodeURIComponent(processesData);
+        let parsed: unknown;
         try {
           parsed = JSON.parse(decoded);
         } catch {
           parsed = JSON.parse(decodeURIComponent(decoded));
         }
-        setProcesses(parsed);
+        if (Array.isArray(parsed)) {
+          setProcesses(parsed as Process[]);
+        } else {
+          console.error("Invalid processes data from URL");
+        }
         
         // If we have both algo and processes, trigger auto-submit
         if (algo && Array.isArray(parsed) && parsed.length > 0) {
@@ -196,7 +200,7 @@ export default function MainForm() {
       params.set("algo", selectedAlgorithm);
     }
 
-    if (selectedAlgorithm === "RR" && quantumValue != null && !Number.isNaN(quantumValue as any)) {
+    if (selectedAlgorithm === "RR" && quantumValue != null && !Number.isNaN(quantumValue)) {
       params.set("quantum", String(quantumValue));
     }
 
@@ -248,7 +252,7 @@ export default function MainForm() {
       toast.success("Link copied to clipboard!", {
         position: "top-center",
       });
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy link", {
         position: "top-center",
       });
