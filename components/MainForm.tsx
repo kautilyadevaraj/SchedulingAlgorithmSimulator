@@ -85,8 +85,43 @@ export default function MainForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Helper to normalize algorithm values from URL to internal values
+  const normalizeAlgorithm = (algo?: string | null) => {
+    if (!algo) return null;
+    const a = algo.toLowerCase();
+    if (a === "fcfs" || a === "firstcomefirstserve" || a === "first_come_first_serve") return "FCFS";
+    if (a === "rr" || a === "roundrobin" || a === "round_robin") return "RR";
+    if (a === "sjf" || a === "shortestjobfirst" || a === "shortest_job_first") return "SJF";
+    if (
+      a === "srtf" ||
+      a === "shortestremainingtimefirst" ||
+      a === "shortest_remaining_time_first"
+    )
+      return "SRTF";
+    return null;
+  };
+
+  // Get initial values from URL
+  const getInitialAlgorithm = () => {
+    const algoRaw = searchParams?.get("algo");
+    return normalizeAlgorithm(algoRaw) || "";
+  };
+
+  const getInitialQuantum = () => {
+    const quantum = searchParams?.get("quantum");
+    const algo = normalizeAlgorithm(searchParams?.get("algo"));
+    if (quantum && algo === "RR") {
+      return parseInt(quantum);
+    }
+    return undefined;
+  };
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
+    defaultValues: {
+      algorithm: getInitialAlgorithm(),
+      quantum: getInitialQuantum(),
+    },
   });
 
   // Watch quantum so URL stays in sync when it changes
@@ -111,41 +146,22 @@ export default function MainForm() {
 
   const summaryRef = useRef<HTMLDivElement>(null);
 
-  // Helper to normalize algorithm values from URL to internal values
-  const normalizeAlgorithm = (algo?: string | null) => {
-    if (!algo) return null;
-    const a = algo.toLowerCase();
-    if (a === "fcfs" || a === "firstcomefirstserve" || a === "first_come_first_serve")
-      return "FCFS"; // internal value used in Select
-    if (a === "rr" || a === "roundrobin" || a === "round_robin") return "RR";
-    if (a === "sjf" || a === "shortestjobfirst" || a === "shortest_job_first")
-      return "SJF";
-    if (
-      a === "srtf" ||
-      a === "shortestremainingtimefirst" ||
-      a === "shortest_remaining_time_first"
-    )
-      return "SRTF";
-    return null;
-  };
-
-  // Load data from URL on mount (only once)
+  // Sync selectedAlgorithm with form value on mount and changes
   useEffect(() => {
-    if (hasLoadedFromUrl) return; // Prevent re-running
+    const formAlgo = form.getValues("algorithm");
+    if (formAlgo && formAlgo !== selectedAlgorithm) {
+      setSelectedAlgorithm(formAlgo);
+    }
+  }, [form.watch("algorithm")]);
 
+  // Load processes from URL on mount (only once)
+  useEffect(() => {
+    if (hasLoadedFromUrl) return;
+    if (!searchParams) return;
+
+    const processesData = searchParams.get("processes");
     const algoRaw = searchParams.get("algo");
     const algo = normalizeAlgorithm(algoRaw);
-    const quantum = searchParams.get("quantum");
-    const processesData = searchParams.get("processes");
-
-    if (algo) {
-      form.setValue("algorithm", algo);
-      setSelectedAlgorithm(algo);
-    }
-
-    if (quantum && algo === "RR") {
-      form.setValue("quantum", parseInt(quantum));
-    }
 
     if (processesData) {
       try {
@@ -159,13 +175,13 @@ export default function MainForm() {
         }
         if (Array.isArray(parsed)) {
           setProcesses(parsed as Process[]);
+          
+          // If we have both algo and processes, trigger auto-submit
+          if (algo && parsed.length > 0) {
+            setShouldAutoSubmit(true);
+          }
         } else {
           console.error("Invalid processes data from URL");
-        }
-        
-        // If we have both algo and processes, trigger auto-submit
-        if (algo && Array.isArray(parsed) && parsed.length > 0) {
-          setShouldAutoSubmit(true);
         }
       } catch (error) {
         console.error("Failed to parse processes from URL:", error);
@@ -173,7 +189,7 @@ export default function MainForm() {
     }
 
     setHasLoadedFromUrl(true);
-  }, []); // Run only once on mount
+  }, [searchParams, hasLoadedFromUrl]);
 
   // Auto-submit when loaded from URL
   useEffect(() => {
@@ -194,22 +210,45 @@ export default function MainForm() {
     // Skip URL update if we haven't finished initial load
     if (!hasLoadedFromUrl) return;
 
-    const params = new URLSearchParams();
+    // Start from current params so we don't accidentally drop existing ones
+    const params = new URLSearchParams(window.location.search);
 
+    // algo handling
     if (selectedAlgorithm) {
       params.set("algo", selectedAlgorithm);
+    } else {
+      // If no algorithm is selected in state, do not drop an existing algo from the URL
+      // Only remove it when state explicitly says there is none AND there wasn't one before
+      // i.e., when it's already missing.
+      if (!params.get("algo")) {
+        params.delete("algo");
+      }
     }
 
-    if (selectedAlgorithm === "RR" && quantumValue != null && !Number.isNaN(quantumValue)) {
+    // quantum handling (only valid for RR)
+    if (
+      selectedAlgorithm === "RR" &&
+      quantumValue != null &&
+      !Number.isNaN(quantumValue)
+    ) {
       params.set("quantum", String(quantumValue));
+    } else {
+      params.delete("quantum");
     }
 
+    // processes handling
     if (processes.length > 0) {
       params.set("processes", encodeURIComponent(JSON.stringify(processes)));
+    } else {
+      params.delete("processes");
     }
 
-    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
-    router.replace(newUrl, { scroll: false });
+    const newQuery = params.toString();
+    const currentQuery = window.location.search.replace(/^\?/, "");
+    if (newQuery !== currentQuery) {
+      const newUrl = newQuery ? `?${newQuery}` : window.location.pathname;
+      router.replace(newUrl, { scroll: false });
+    }
   }, [processes, selectedAlgorithm, quantumValue, router, hasLoadedFromUrl]);
 
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
