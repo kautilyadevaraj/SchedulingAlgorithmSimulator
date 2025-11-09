@@ -53,7 +53,7 @@ export function SummaryTable({
   });
 
   // If the algorithm is FCFS, calculate waiting and turnaround times after sorting by arrival time
-if (algorithm === "fCFS") {
+if (algorithm === "FCFS") {
   // Sort processes by arrival time for FCFS order, ignoring idle processes
   const sortedProcesses = [...calculatedProcesses].sort(
     (a, b) => a.arrival_time - b.arrival_time
