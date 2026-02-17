@@ -22,15 +22,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormLabel,
-} from "@/components/ui/form";
+import { Form, FormLabel } from "@/components/ui/form";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
-import { shortestJobFirst, SimulationResult, Process } from "@/lib/ShortestJobFirst";
+import {
+  shortestJobFirst,
+  SimulationResult,
+  Process,
+} from "@/lib/ShortestJobFirst";
 import SummaryStatistics from "./SummaryStatistics";
 import { toast } from "sonner";
 
@@ -46,7 +47,8 @@ export default function MainForm() {
   });
 
   const [processes, setProcesses] = useState<Process[]>([]);
-  const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
+  const [simulationResult, setSimulationResult] =
+    useState<SimulationResult | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
@@ -57,18 +59,21 @@ export default function MainForm() {
   const summaryRef = useRef<HTMLDivElement>(null);
 
   // Memoize onSubmit early to satisfy useEffect dependency and avoid "used before declaration"
-  const onSubmit = useCallback((_data: z.infer<typeof FormSchema>) => {
-    if (processes.length === 0) {
-      toast.error("No processes added!");
-      return;
-    }
-    const result = shortestJobFirst(processes);
-    setSimulationResult(result);
-    setFinalizedProcesses([...processes]);
-    setTimeout(() => {
-      summaryRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 0);
-  }, [processes]);
+  const onSubmit = useCallback(
+    (_data: z.infer<typeof FormSchema>) => {
+      if (processes.length === 0) {
+        toast.error("¡No agregaste procesos!");
+        return;
+      }
+      const result = shortestJobFirst(processes);
+      setSimulationResult(result);
+      setFinalizedProcesses([...processes]);
+      setTimeout(() => {
+        summaryRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 0);
+    },
+    [processes],
+  );
 
   // Load processes from URL on mount
   useEffect(() => {
@@ -121,7 +126,7 @@ export default function MainForm() {
     } else {
       params.delete("processes");
     }
-    
+
     params.set("algo", "SJF");
 
     const newQuery = params.toString();
@@ -138,8 +143,8 @@ export default function MainForm() {
         prevProcesses.map((process, index) =>
           index === currentEditIndex
             ? { ...newProcess, process_id: process.process_id }
-            : process
-        )
+            : process,
+        ),
       );
       setCurrentEditIndex(null);
     } else {
@@ -158,14 +163,16 @@ export default function MainForm() {
 
   const handleShare = async () => {
     if (processes.length === 0) {
-      toast.error("Add processes first!", { position: "top-center" });
+      toast.error("¡Agregá procesos primero!", { position: "top-center" });
       return;
     }
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard!", { position: "top-center" });
+      toast.success("¡Enlace copiado al portapapeles!", {
+        position: "top-center",
+      });
     } catch {
-      toast.error("Failed to copy link", { position: "top-center" });
+      toast.error("Error al copiar el enlace", { position: "top-center" });
     }
   };
 
@@ -192,7 +199,7 @@ export default function MainForm() {
       process.process_id = index + 1;
     });
     setProcesses(newProcesses);
-    toast.success(`Generated ${numProcesses} random processes!`);
+    toast.success(`¡Se generaron ${numProcesses} procesos aleatorios!`);
   };
 
   return (
@@ -202,41 +209,34 @@ export default function MainForm() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <FormLabel className="text-2xl font-bold">Shortest Job First</FormLabel>
-                <div 
-                  role="button"
-                  tabIndex={0}
-                  className="text-sm text-muted-foreground p-4 bg-muted rounded-lg cursor-pointer transition-all select-none border border-transparent hover:border-primary/20"
-                  onClick={() => setDescriptionRevealed(!descriptionRevealed)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      setDescriptionRevealed(!descriptionRevealed);
-                    }
-                  }}
-                  title="Click to toggle description"
-                >
-                  <p className={descriptionRevealed ? "leading-relaxed" : "blur-sm leading-relaxed"}>
-                    SJF selects the waiting process with the smallest burst time to execute next. 
-                    It's optimal for minimizing average waiting time in a non-preemptive environment.
-                    Tie-breaking is handled by arrival time.
+                <FormLabel className="text-2xl font-bold">
+                  Shortest Job First (SJF)
+                </FormLabel>
+                <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg border border-transparent">
+                  <p className="leading-relaxed">
+                    SJF selecciona el proceso en espera con el menor tiempo de
+                    ráfaga (burst time) para ejecutarse a continuación. Es
+                    óptimo para minimizar el tiempo de espera promedio en un
+                    entorno no apropiativo. El desempate se maneja por tiempo de
+                    llegada.
                   </p>
-                  {!descriptionRevealed && (
-                    <p className="text-xs text-center mt-2 font-medium text-primary">Click to reveal details</p>
-                  )}
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button type="submit" className="flex-1 font-semibold py-6 text-lg">
-                  Simulate SJF
+                <Button
+                  type="submit"
+                  className="flex-1 font-semibold py-6 text-lg"
+                >
+                  Simular SJF
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   size="icon"
                   className="h-auto px-4"
                   onClick={handleShare}
                   disabled={processes.length === 0}
-                  title="Share Simulation"
+                  title="Compartir Simulación"
                 >
                   <Share2 className="h-5 w-5" />
                 </Button>
@@ -250,10 +250,17 @@ export default function MainForm() {
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-xl">Process Queue</CardTitle>
-              <CardDescription>Configure the processes for simulation</CardDescription>
+              <CardTitle className="text-xl">Cola de Procesos</CardTitle>
+              <CardDescription>
+                Configura los procesos para la simulación
+              </CardDescription>
             </div>
-            <Button variant="ghost" size="icon" onClick={generateRandomProcesses} title="Generate Random Data">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={generateRandomProcesses}
+              title="Generar datos aleatorios"
+            >
               <Dices className="h-5 w-5" />
             </Button>
           </div>
@@ -261,7 +268,10 @@ export default function MainForm() {
         <CardContent className="grid gap-6 w-full">
           <div className="flex justify-start flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2">
             {processes.map((process, index) => (
-              <div key={process.process_id} className="flex items-center space-x-3 p-3 rounded-lg border bg-accent/30 min-w-[140px]">
+              <div
+                key={process.process_id}
+                className="flex items-center space-x-3 p-3 rounded-lg border bg-accent/30 min-w-[140px]"
+              >
                 <div
                   className="flex justify-center items-center h-10 w-10 rounded-md shadow-inner relative group"
                   style={{ background: process.background }}
@@ -275,60 +285,69 @@ export default function MainForm() {
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold">Arr: {process.arrival_time}</p>
-                  <p className="text-xs font-semibold text-muted-foreground">Burst: {process.burst_time}</p>
+                  <p className="text-xs font-semibold">
+                    Llegada: {process.arrival_time}
+                  </p>
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Ráfaga: {process.burst_time}
+                  </p>
                 </div>
               </div>
             ))}
             {processes.length === 0 && (
               <div className="w-full text-center py-8 text-muted-foreground italic text-sm">
-                No processes added yet.
+                No hay procesos agregados.
               </div>
             )}
           </div>
           <div className="flex gap-3 justify-center">
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="flex-1 max-w-[150px]">Add Process</Button>
+                <Button variant="outline" className="flex-1 max-w-[150px]">
+                  Agregar Proceso
+                </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
                 <ProcessForm
                   addProcess={addProcess}
-                  initialValues={currentEditIndex !== null ? processes[currentEditIndex] : undefined}
+                  initialValues={
+                    currentEditIndex !== null
+                      ? processes[currentEditIndex]
+                      : undefined
+                  }
                 />
               </PopoverContent>
             </Popover>
-            <Button 
+            <Button
               onClick={() => {
                 setProcesses([]);
                 setSimulationResult(null);
                 setFinalizedProcesses([]);
-              }} 
+              }}
               variant="destructive"
               className="flex-1 max-w-[150px]"
               disabled={processes.length === 0}
             >
-              Clear All
+              Limpiar Todo
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {simulationResult && (
-        <div ref={summaryRef} className="col-span-1 md:col-span-2 flex flex-col items-center w-full mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div
+          ref={summaryRef}
+          className="col-span-1 md:col-span-2 flex flex-col items-center w-full mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+        >
           <div className="md:w-[90%] w-full bg-card rounded-xl border shadow-sm p-6 mb-8">
             <GanttChart processes={simulationResult.sequence} />
           </div>
           <div className="w-full flex justify-center flex-wrap gap-8 px-4">
             <div className="w-full lg:w-auto">
-              <SummaryTable
-                processStats={simulationResult.processStats}
-              />
+              <SummaryTable processStats={simulationResult.processStats} />
             </div>
             <div className="w-full lg:w-auto">
-              <SummaryStatistics
-                stats={simulationResult.stats}
-              />
+              <SummaryStatistics stats={simulationResult.stats} />
             </div>
           </div>
         </div>

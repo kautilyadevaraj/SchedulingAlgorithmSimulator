@@ -56,7 +56,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
 
   return (
     <div className="w-full shadow-md pt-10">
-      <h2 className="text-lg font-semibold pl-2 mb-4">Gantt Chart</h2>
+      <h2 className="text-lg font-semibold pl-2 mb-4 italic">Diagrama de Gantt</h2>
       <div className="h-fit p-1">
         {/* Use animationKey to force reanimation */}
         <motion.div
@@ -86,7 +86,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
               >
                 <span>
                   {process.arrival_time === -1
-                    ? `Idle`
+                    ? `Ocio`
                     : `P${process.process_id}`}
                 </span>
               </motion.div>

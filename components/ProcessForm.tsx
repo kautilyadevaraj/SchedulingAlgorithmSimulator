@@ -33,14 +33,14 @@ type Process = {
 const ProcessSchema = z.object({
   arrival_time: z.coerce
     .number()
-    .gt(-1, { message: "Arrival Time cannot be negative." }) // allow 0, disallow negatives
-    .lte(100, { message: "Arrival Time cannot be greater than 100." }),
+    .gt(-1, { message: "El tiempo de llegada no puede ser negativo." }) // allow 0, disallow negatives
+    .lte(100, { message: "El tiempo de llegada no puede ser mayor a 100." }),
   burst_time: z.coerce
     .number()
-    .gt(0, { message: "Burst Time must be greater than 0." }) // strictly positive
-    .lte(100, { message: "Burst Time cannot be greater than 100." }),
+    .gt(0, { message: "El tiempo de ráfaga debe ser mayor a 0." }) // strictly positive
+    .lte(100, { message: "El tiempo de ráfaga no puede ser mayor a 100." }),
   background: z.string().nonempty({
-    message: "Please select a background.",
+    message: "Por favor, selecciona un color.",
   }),
 });
 
@@ -85,9 +85,9 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
           name="arrival_time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Arrival Time</FormLabel>
+              <FormLabel>Tiempo de Llegada</FormLabel>
               <FormControl>
-                <Input placeholder="Default arrival time : 0" {...field} />
+                <Input placeholder="Llegada por defecto: 0" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -98,9 +98,9 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
           name="burst_time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Burst Time</FormLabel>
+              <FormLabel>Tiempo de Ráfaga</FormLabel>
               <FormControl>
-                <Input placeholder="Default burst time : 1" {...field} />
+                <Input placeholder="Ráfaga por defecto: 1" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -111,7 +111,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
           name="background"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Choose a color for the process</FormLabel>
+              <FormLabel>Elegí un color para el proceso</FormLabel>
               <GradientPicker
                 className="w-full truncate"
                 background={field.value}
@@ -121,7 +121,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Enviar</Button>
       </form>
     </Form>
   );

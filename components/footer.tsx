@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="w-full py-4 text-center text-base">
       <h1>
-        Built by {" "}
+        Desarrollado por{" "}
         <Link
           href="https://github.com/kautilyadevaraj"
           target="_blank"
@@ -21,7 +21,7 @@ export default function Footer() {
           target="_blank"
           className="underline inline-flex items-center gap-1"
         >
-          Star this on Github⭐
+          ¡Danos una estrella en GitHub! ⭐
         </Link>
       </h2>
     </footer>

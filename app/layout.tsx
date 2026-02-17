@@ -10,31 +10,30 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = JetBrains_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CPU Scheduling Algorithm Simulator",
+  title: "Simulador de Planificación de CPU SJF",
   description:
-    "Explore and simulate various CPU scheduling algorithms like Shortest Remaining Time First (SRTF), First Come First Serve (FCFS), and more. Perfect for learning and testing CPU scheduling concepts.",
+    "Explora y simula el algoritmo de planificación de CPU Shortest Job First (SJF). Perfecto para aprender y probar conceptos de planificación de CPU.",
   keywords: [
-    "scheduling algorithm simulator",
-    "SRTF",
-    "FCFS",
-    "CPU scheduling",
-    "OS algorithms",
-    "interactive simulator",
+    "simulador de algoritmos de planificación",
+    "SJF",
+    "planificación de CPU",
+    "algoritmos de SO",
+    "simulador interactivo",
   ],
   openGraph: {
-    title: "CPU Scheduling Algorithm Simulator",
+    title: "Simulador de Planificación de CPU SJF",
     description:
-      "Test and learn CPU scheduling algorithms like SRTF, FCFS, and others with this interactive simulator.",
+      "Prueba y aprende el algoritmo de planificación de CPU SJF con este simulador interactivo.",
     url: "https://scheduling-algorithm-simulator.vercel.app/",
-    siteName: "Scheduling Algorithm Simulator",
-    locale: "en_US",
+    siteName: "Simulador de Planificación SJF",
+    locale: "es_ES",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CPU Scheduling Algorithm Simulator",
+    title: "Simulador de Planificación de CPU SJF",
     description:
-      "Simulate various CPU scheduling algorithms for learning and testing.",
+      "Simula el algoritmo de planificación de CPU SJF para aprender y probar.",
   },
   
 };
@@ -46,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <meta
         name="google-site-verification"
         content="l7MqVL5_9AEbO8FaJpT-XLlxSLYCdbCoIrV0Y4G9IXw"
@@ -58,7 +57,7 @@ export default function RootLayout({
         <div className="flex flex-col min-h-screen">
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >

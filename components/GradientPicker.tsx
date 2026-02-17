@@ -93,7 +93,7 @@ export function GradientPicker({
               <Paintbrush className="h-4 w-4" />
             )}
             <div className="truncate flex-1">
-              {background ? background : "Pick a color"}
+              {background ? background : "Elegí un color"}
             </div>
           </div>
         </Button>
@@ -102,10 +102,10 @@ export function GradientPicker({
         <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="w-full mb-4">
             <TabsTrigger className="flex-1" value="solid">
-              Solid
+              Sólido
             </TabsTrigger>
             <TabsTrigger className="flex-1" value="gradient">
-              Gradient
+              Degradado
             </TabsTrigger>
             
           </TabsList>

@@ -12,10 +12,10 @@ type SummaryStatisticsProps = {
 
 export default function SummaryStatistics({ stats }: SummaryStatisticsProps) {
   const displayStats = [
-    { label: "Avg Waiting Time", value: stats.avgWaitingTime.toFixed(2) },
-    { label: "Avg Turnaround Time", value: stats.avgTurnaroundTime.toFixed(2) },
+    { label: "T. Espera Promedio", value: stats.avgWaitingTime.toFixed(2) },
+    { label: "T. Retorno Promedio", value: stats.avgTurnaroundTime.toFixed(2) },
     { label: "Throughput", value: stats.throughput.toFixed(2) },
-    { label: "CPU Utilization", value: `${stats.cpuUtilization.toFixed(2)}%` },
+    { label: "Utilización de CPU", value: `${stats.cpuUtilization.toFixed(2)}%` },
   ];
 
   return (

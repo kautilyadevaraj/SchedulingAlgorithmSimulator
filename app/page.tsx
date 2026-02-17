@@ -3,8 +3,7 @@
 import MainForm from "@/components/MainForm";
 import { useEffect, useState, Suspense } from "react";
 import { useTheme } from "next-themes";
-import HyperText from "@/components/ui/hyper-text";
-
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 import Particles from "@/components/ui/particles";
 
@@ -18,21 +17,13 @@ export default function Home() {
   return (
     <div className="container max-w-full">
       <main className="flex flex-col justify-center sm:items-start p-5 grow-0">
-        {/* <AnimatedGridPattern
-          numSquares={30}
-          maxOpacity={0.3}
-          duration={5}
-          repeatDelay={0.5}
-          className={cn(
-            "[mask-image:radial-gradient(700px_circle_at_center,white,transparent)]",
-            "h-[100%] skew-y-25"
-          )}
-        /> */}
-        <div className="w-full flex justify-center pb-5">
-          <HyperText
-            className="md:text-4xl text-center font-bold text-black dark:text-white"
-            text="Scheduling Algorithm Simulator"
-          />
+        <div className="w-full flex justify-between items-center pb-5">
+          <div className="flex-1 text-center">
+            <h1 className="md:text-4xl text-2xl font-bold text-black dark:text-white">
+              Simulador de Planificación SJF
+            </h1>
+          </div>
+          <ThemeToggle />
         </div>
 
         <Particles

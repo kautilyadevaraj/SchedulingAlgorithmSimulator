@@ -50,15 +50,15 @@ export function SummaryTable({
     >
       <Table className="bg-card rounded-lg overflow-hidden border">
         <TableCaption>
-          Process scheduling summary using Shortest Job First.
+          Resumen de la planificación usando Shortest Job First.
         </TableCaption>
         <TableHeader className="bg-muted/50">
           <TableRow>
             <TableHead className="w-[100px] text-center font-bold">PID</TableHead>
-            <TableHead className="text-center font-bold">Arrival</TableHead>
-            <TableHead className="text-center font-bold">Burst</TableHead>
-            <TableHead className="text-center font-bold">Waiting</TableHead>
-            <TableHead className="text-center font-bold">Turnaround</TableHead>
+            <TableHead className="text-center font-bold">Llegada</TableHead>
+            <TableHead className="text-center font-bold">Ráfaga</TableHead>
+            <TableHead className="text-center font-bold">Espera</TableHead>
+            <TableHead className="text-center font-bold">Retorno</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -84,7 +84,7 @@ export function SummaryTable({
         </TableBody>
         <TableFooter className="bg-muted/50 font-bold">
           <TableRow>
-            <TableCell colSpan={3} className="text-right pr-4">Totals</TableCell>
+            <TableCell colSpan={3} className="text-right pr-4">Totales</TableCell>
             <TableCell className="text-center text-primary">{totalWaitingTime}</TableCell>
             <TableCell className="text-center text-primary">{totalTurnaroundTime}</TableCell>
           </TableRow>
