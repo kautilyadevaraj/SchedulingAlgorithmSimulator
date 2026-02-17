@@ -24,7 +24,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
   // Reset animation key when processes change
   useEffect(() => {
     setAnimationKey((prevKey) => prevKey + 1);
-  }, [processes]);
+  }, [processes.length]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -72,7 +72,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
 
             return (
               <motion.div
-                key={index}
+                key={`${process.process_id}-${index}`}
                 className="relative flex items-center justify-center text-white text-xs font-medium h-16"
                 style={{
                   width: `${widthPercentage}%`,
@@ -102,7 +102,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
 
             return (
               <div
-                key={index}
+                key={`time-${process.process_id}-${index}`}
                 className={`relative flex text-white text-xs font-medium ${
                   index === processes.length - 1 ? "flex justify-between" : ""
                 }`}

@@ -24,148 +24,61 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Form,
-  FormControl,
-  FormField,
-  FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "./ui/input";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
-import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
-import { shortestJobFirst } from "@/lib/ShortestJobFirst";
-import { roundRobin } from "@/lib/RoundRobin";
-import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
+import { shortestJobFirst, SimulationResult, Process } from "@/lib/ShortestJobFirst";
 import SummaryStatistics from "./SummaryStatistics";
 import { toast } from "sonner";
 
-const FormSchema = z
-  .object({
-    algorithm: z.string({
-      required_error: "Please select an algorithm to display.",
-    }),
-    quantum: z.coerce
-      .number()
-      .lte(100, { message: "Quantum cannot be greater than 100." })
-      .optional(),
-  })
-  .refine(
-    (data) => {
-      // If Round Robin is selected, quantum must exist and be > 0
-      if (data.algorithm === "RR") {
-        return data.quantum !== undefined && data.quantum > 0;
-      }
-      return true;
-    },
-    {
-      message: "Time Quantum must be greater than 0.",
-      path: ["quantum"],
-    }
-  );
-
-
-type Process = {
-  process_id: number;
-  arrival_time: number;
-  burst_time: number;
-  background: string;
-};
+const FormSchema = z.object({});
 
 export default function MainForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Helper to normalize algorithm values from URL to internal values
-  const normalizeAlgorithm = (algo?: string | null) => {
-    if (!algo) return null;
-    const a = algo.toLowerCase();
-    if (a === "fcfs" || a === "firstcomefirstserve" || a === "first_come_first_serve") return "FCFS";
-    if (a === "rr" || a === "roundrobin" || a === "round_robin") return "RR";
-    if (a === "sjf" || a === "shortestjobfirst" || a === "shortest_job_first") return "SJF";
-    if (
-      a === "srtf" ||
-      a === "shortestremainingtimefirst" ||
-      a === "shortest_remaining_time_first"
-    )
-      return "SRTF";
-    return null;
-  };
-
-  // Get initial values from URL
-  const getInitialAlgorithm = () => {
-    const algoRaw = searchParams?.get("algo");
-    return normalizeAlgorithm(algoRaw) || "";
-  };
-
-  const getInitialQuantum = () => {
-    const quantum = searchParams?.get("quantum");
-    const algo = normalizeAlgorithm(searchParams?.get("algo"));
-    if (quantum && algo === "RR") {
-      return parseInt(quantum);
-    }
-    return undefined;
-  };
-
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      algorithm: getInitialAlgorithm(),
-      quantum: getInitialQuantum(),
-    },
+    defaultValues: {},
   });
 
-  // Watch quantum so URL stays in sync when it changes
-  const quantumValue = form.watch("quantum");
-
   const [processes, setProcesses] = useState<Process[]>([]);
-
-  const [resultSequence, setResultSequence] = useState<Process[]>([]);
-
+  const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
-
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
-
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState("");
-
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
-
   const [descriptionRevealed, setDescriptionRevealed] = useState(false);
-
   const [hasLoadedFromUrl, setHasLoadedFromUrl] = useState(false);
   const [shouldAutoSubmit, setShouldAutoSubmit] = useState(false);
 
   const summaryRef = useRef<HTMLDivElement>(null);
 
-  // Sync selectedAlgorithm with form value on mount and changes
-  useEffect(() => {
-    const formAlgo = form.getValues("algorithm");
-    if (formAlgo && formAlgo !== selectedAlgorithm) {
-      setSelectedAlgorithm(formAlgo);
+  // Memoize onSubmit early to satisfy useEffect dependency and avoid "used before declaration"
+  const onSubmit = useCallback((_data: z.infer<typeof FormSchema>) => {
+    if (processes.length === 0) {
+      toast.error("No processes added!");
+      return;
     }
-  }, [form.watch("algorithm")]);
+    const result = shortestJobFirst(processes);
+    setSimulationResult(result);
+    setFinalizedProcesses([...processes]);
+    setTimeout(() => {
+      summaryRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 0);
+  }, [processes]);
 
-  // Load processes from URL on mount (only once)
+  // Load processes from URL on mount
   useEffect(() => {
     if (hasLoadedFromUrl) return;
     if (!searchParams) return;
 
     const processesData = searchParams.get("processes");
-    const algoRaw = searchParams.get("algo");
-    const algo = normalizeAlgorithm(algoRaw);
 
     if (processesData) {
       try {
-        // Handle potential double-encoding gracefully
         const decoded = decodeURIComponent(processesData);
         let parsed: unknown;
         try {
@@ -175,13 +88,9 @@ export default function MainForm() {
         }
         if (Array.isArray(parsed)) {
           setProcesses(parsed as Process[]);
-          
-          // If we have both algo and processes, trigger auto-submit
-          if (algo && parsed.length > 0) {
+          if (parsed.length > 0) {
             setShouldAutoSubmit(true);
           }
-        } else {
-          console.error("Invalid processes data from URL");
         }
       } catch (error) {
         console.error("Failed to parse processes from URL:", error);
@@ -193,55 +102,27 @@ export default function MainForm() {
 
   // Auto-submit when loaded from URL
   useEffect(() => {
-    if (shouldAutoSubmit && processes.length > 0 && selectedAlgorithm) {
-      // Small delay to ensure form is populated
-      setTimeout(() => {
-        const formData = form.getValues();
-        if (formData.algorithm) {
-          onSubmit(formData as z.infer<typeof FormSchema>);
-          setShouldAutoSubmit(false); // Only auto-submit once
-        }
+    if (shouldAutoSubmit && processes.length > 0) {
+      const timer = setTimeout(() => {
+        onSubmit({});
+        setShouldAutoSubmit(false);
       }, 200);
+      return () => clearTimeout(timer);
     }
-  }, [shouldAutoSubmit, processes.length, selectedAlgorithm]);
+  }, [shouldAutoSubmit, processes.length, onSubmit]);
 
-  // Update URL when processes, algorithm or quantum changes
+  // Update URL when processes change
   useEffect(() => {
-    // Skip URL update if we haven't finished initial load
     if (!hasLoadedFromUrl) return;
-
-    // Start from current params so we don't accidentally drop existing ones
     const params = new URLSearchParams(window.location.search);
 
-    // algo handling
-    if (selectedAlgorithm) {
-      params.set("algo", selectedAlgorithm);
-    } else {
-      // If no algorithm is selected in state, do not drop an existing algo from the URL
-      // Only remove it when state explicitly says there is none AND there wasn't one before
-      // i.e., when it's already missing.
-      if (!params.get("algo")) {
-        params.delete("algo");
-      }
-    }
-
-    // quantum handling (only valid for RR)
-    if (
-      selectedAlgorithm === "RR" &&
-      quantumValue != null &&
-      !Number.isNaN(quantumValue)
-    ) {
-      params.set("quantum", String(quantumValue));
-    } else {
-      params.delete("quantum");
-    }
-
-    // processes handling
     if (processes.length > 0) {
       params.set("processes", encodeURIComponent(JSON.stringify(processes)));
     } else {
       params.delete("processes");
     }
+    
+    params.set("algo", "SJF");
 
     const newQuery = params.toString();
     const currentQuery = window.location.search.replace(/^\?/, "");
@@ -249,326 +130,206 @@ export default function MainForm() {
       const newUrl = newQuery ? `?${newQuery}` : window.location.pathname;
       router.replace(newUrl, { scroll: false });
     }
-  }, [processes, selectedAlgorithm, quantumValue, router, hasLoadedFromUrl]);
+  }, [processes, router, hasLoadedFromUrl]);
 
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
-      // Edit existing process
       setProcesses((prevProcesses) =>
         prevProcesses.map((process, index) =>
           index === currentEditIndex
-            ? { ...newProcess, process_id: process.process_id } // Retain original process_id
+            ? { ...newProcess, process_id: process.process_id }
             : process
         )
       );
-      setCurrentEditIndex(null); // Reset after editing
+      setCurrentEditIndex(null);
     } else {
-      // Add new process
       setProcesses((prevProcesses) => [
         ...prevProcesses,
-        { ...newProcess, process_id: prevProcesses.length + 1 }, // Assign process_id based on array length
+        { ...newProcess, process_id: prevProcesses.length + 1 },
       ]);
     }
-    setPopoverOpen(false); // Close popover after adding/editing
+    setPopoverOpen(false);
   };
 
   const handleEditProcess = (index: number) => {
     setCurrentEditIndex(index);
-    setPopoverOpen(true); // Open popover for editing
+    setPopoverOpen(true);
   };
 
   const handleShare = async () => {
-    if (processes.length === 0 || !selectedAlgorithm) {
-      toast.error("Add processes and select an algorithm first!", {
-        position: "top-center",
-      });
+    if (processes.length === 0) {
+      toast.error("Add processes first!", { position: "top-center" });
       return;
     }
-
     try {
-      const url = window.location.href;
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!", {
-        position: "top-center",
-      });
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!", { position: "top-center" });
     } catch {
-      toast.error("Failed to copy link", {
-        position: "top-center",
-      });
+      toast.error("Failed to copy link", { position: "top-center" });
     }
-  }
+  };
+
   const generateRandomColor = () => {
     const hue = Math.floor(Math.random() * 360);
-    const saturation = 60 + Math.floor(Math.random() * 40); // 60-100%
-    const lightness = 50 + Math.floor(Math.random() * 20); // 50-70%
+    const saturation = 60 + Math.floor(Math.random() * 40);
+    const lightness = 50 + Math.floor(Math.random() * 20);
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   };
 
   const generateRandomProcesses = () => {
-    const numProcesses = Math.floor(Math.random() * 3) + 3; // 3-5 processes
+    const numProcesses = Math.floor(Math.random() * 3) + 3;
     const newProcesses: Process[] = [];
-    
     for (let i = 0; i < numProcesses; i++) {
       newProcesses.push({
         process_id: i + 1,
-        arrival_time: Math.floor(Math.random() * 10), // 0-9
-        burst_time: Math.floor(Math.random() * 10) + 1, // 1-10
+        arrival_time: Math.floor(Math.random() * 10),
+        burst_time: Math.floor(Math.random() * 10) + 1,
         background: generateRandomColor(),
       });
     }
-    
-    // Sort by arrival time for better visualization
     newProcesses.sort((a, b) => a.arrival_time - b.arrival_time);
-    
-    // Reassign process_ids after sorting to maintain correct color mapping
     newProcesses.forEach((process, index) => {
       process.process_id = index + 1;
     });
-    
     setProcesses(newProcesses);
     toast.success(`Generated ${numProcesses} random processes!`);
   };
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    let sequence: Process[] = [];
-    if (processes.length === 0) {
-      toast.error("No processes added!");
-      return;
-    }
-    switch (data.algorithm) {
-      case "FCFS":
-        sequence = firstComeFirstServe(processes);
-        break;
-      case "SJF":
-        sequence = shortestJobFirst(processes);
-        break;
-      case "RR":
-        sequence = roundRobin(processes, data.quantum ?? 0);
-        break;
-      case "SRTF":
-        sequence = shortestRemainingTimeFirst(processes);
-      default:
-        break;
-    }
-
-    setResultSequence(sequence);
-    setFinalizedProcesses([...processes]);
-    setTimeout(() => {
-      summaryRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 0);
-  }
-
   return (
-    <div className="grid grid-cols-2 w-full max-w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
-      
-      <div className="row-span-2 col-span-2 md:col-span-1 max-w-full md:pl-14 flex flex-col items-center px-4">
-        <div className="md:max-w-[300px] border p-4 rounded-xl">
+    <div className="grid grid-cols-1 md:grid-cols-2 w-full max-w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
+      <div className="col-span-1 max-w-full md:pl-14 flex flex-col items-center px-4 w-full">
+        <div className="md:max-w-[400px] border p-6 rounded-xl bg-card w-full shadow-sm">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-              <FormField
-                control={form.control}
-                name="algorithm"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Select a scheduling algorithm to simulate.
-                    </FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        setSelectedAlgorithm(value); // track selected algorithm
-                        setDescriptionRevealed(false); // reset blur on new selection
-                      }}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an algorithm" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="FCFS">
-                          First Come First Serve
-                        </SelectItem>
-                        <SelectItem value="RR">Round Robin</SelectItem>
-                        <SelectItem value="SJF">Shortest Job First</SelectItem>
-                        <SelectItem value="SRTF">
-                          Shortest Remaining Time First
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Algorithm descriptions */}
-              {selectedAlgorithm && (
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <FormLabel className="text-2xl font-bold">Shortest Job First</FormLabel>
                 <div 
-                  className="text-sm text-muted-foreground p-3 bg-muted rounded-md cursor-pointer transition-all select-none"
+                  role="button"
+                  tabIndex={0}
+                  className="text-sm text-muted-foreground p-4 bg-muted rounded-lg cursor-pointer transition-all select-none border border-transparent hover:border-primary/20"
                   onClick={() => setDescriptionRevealed(!descriptionRevealed)}
-                  title="Click to reveal description"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setDescriptionRevealed(!descriptionRevealed);
+                    }
+                  }}
+                  title="Click to toggle description"
                 >
-                  <p className={descriptionRevealed ? "" : "blur-sm"}>
-                    {selectedAlgorithm === "FCFS" && (
-                      "Processes are executed in the order they arrive. Simple but may cause long waiting times."
-                    )}
-                    {selectedAlgorithm === "SJF" && (
-                      "Executes the shortest job first. Minimizes average waiting time but may cause starvation."
-                    )}
-                    {selectedAlgorithm === "RR" && (
-                      "Each process gets a fixed time quantum in circular order. Fair and responsive for time-sharing systems."
-                    )}
-                    {selectedAlgorithm === "SRTF" && (
-                      "Preemptive version of SJF. Always executes the process with the shortest remaining time."
-                    )}
+                  <p className={descriptionRevealed ? "leading-relaxed" : "blur-sm leading-relaxed"}>
+                    SJF selects the waiting process with the smallest burst time to execute next. 
+                    It's optimal for minimizing average waiting time in a non-preemptive environment.
+                    Tie-breaking is handled by arrival time.
                   </p>
                   {!descriptionRevealed && (
-                    <p className="text-xs text-center mt-1 opacity-70">Click to reveal</p>
+                    <p className="text-xs text-center mt-2 font-medium text-primary">Click to reveal details</p>
                   )}
                 </div>
-              )}
-              {/* Conditionally render time quantum input */}
-              {selectedAlgorithm === "RR" && (
-                <FormField
-                  control={form.control}
-                  name="quantum"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Enter Time Quantum</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          {...field}
-                          placeholder="Time Quantum"
-                          className="input-field"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1">Submit</Button>
+              </div>
+              <div className="flex gap-3">
+                <Button type="submit" className="flex-1 font-semibold py-6 text-lg">
+                  Simulate SJF
+                </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
                   size="icon"
+                  className="h-auto px-4"
                   onClick={handleShare}
-                  title="Share configuration"
-                  disabled={processes.length === 0 || !selectedAlgorithm}
+                  disabled={processes.length === 0}
+                  title="Share Simulation"
                 >
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className="h-5 w-5" />
                 </Button>
               </div>
             </form>
           </Form>
         </div>
       </div>
-      {/* Display the array of processes */}
 
-      <Card className="md:w-[500px] w-full max-w-full col-span-2 md:col-span-1 mx-4">
-        <CardHeader>
+      <Card className="md:w-[500px] w-full max-w-full col-span-1 mx-4 shadow-sm">
+        <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle>Processes</CardTitle>
-              <CardDescription>Add a process to simulate it</CardDescription>
+              <CardTitle className="text-xl">Process Queue</CardTitle>
+              <CardDescription>Configure the processes for simulation</CardDescription>
             </div>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={generateRandomProcesses}
-              title="Generate random processes"
-            >
-              <Dices className="h-4 w-4" />
+            <Button variant="ghost" size="icon" onClick={generateRandomProcesses} title="Generate Random Data">
+              <Dices className="h-5 w-5" />
             </Button>
           </div>
         </CardHeader>
         <CardContent className="grid gap-6 w-full">
-          <div className="flex justify-start flex-wrap md:max-w-[500px]">
+          <div className="flex justify-start flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2">
             {processes.map((process, index) => (
-              <div key={index}>
-                <div className="flex items-center justify-between space-x-4 p-2">
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className="preview flex justify-center items-center p-1 h-[50px] w-[50px] rounded !bg-cover !bg-center transition-all"
-                      style={{
-                        background: process.background,
-                        textShadow: "0 1px 3px rgba(0, 0, 0, 0.7)",
-                      }}
-                    >
-                      <Pencil1Icon
-                        className="h-8 w-8 text-white bg-transparent opacity-0 hover:opacity-100 rounded transition-opacity cursor-pointer"
-                        onClick={() => handleEditProcess(index)}
-                      />
-                    </div>
-                    <div className="pt-1">
-                      <p className="text-sm font-medium leading-none">
-                        Process {index + 1}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Arrival Time : {process.arrival_time}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Burst Time : {process.burst_time}
-                      </p>
-                    </div>
-                  </div>
+              <div key={process.process_id} className="flex items-center space-x-3 p-3 rounded-lg border bg-accent/30 min-w-[140px]">
+                <div
+                  className="flex justify-center items-center h-10 w-10 rounded-md shadow-inner relative group"
+                  style={{ background: process.background }}
+                >
+                  <Pencil1Icon
+                    className="h-6 w-6 text-white bg-black/40 p-1 opacity-0 group-hover:opacity-100 rounded cursor-pointer transition-opacity"
+                    onClick={() => handleEditProcess(index)}
+                  />
+                  <span className="text-white font-bold text-xs drop-shadow-md group-hover:hidden">
+                    P{process.process_id}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold">Arr: {process.arrival_time}</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Burst: {process.burst_time}</p>
                 </div>
               </div>
             ))}
+            {processes.length === 0 && (
+              <div className="w-full text-center py-8 text-muted-foreground italic text-sm">
+                No processes added yet.
+              </div>
+            )}
           </div>
-          <div className="flex flex-col space-y-4 items-center">
+          <div className="flex gap-3 justify-center">
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-fit">
-                  Add Process
-                </Button>
+                <Button variant="outline" className="flex-1 max-w-[150px]">Add Process</Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
                 <ProcessForm
                   addProcess={addProcess}
-                  initialValues={
-                    currentEditIndex !== null
-                      ? processes[currentEditIndex]
-                      : undefined
-                  }
+                  initialValues={currentEditIndex !== null ? processes[currentEditIndex] : undefined}
                 />
               </PopoverContent>
             </Popover>
             <Button 
               onClick={() => {
                 setProcesses([]);
-                setResultSequence([]);
+                setSimulationResult(null);
                 setFinalizedProcesses([]);
               }} 
-              className="w-fit"
+              variant="destructive"
+              className="flex-1 max-w-[150px]"
+              disabled={processes.length === 0}
             >
-              Clear all processes
+              Clear All
             </Button>
           </div>
         </CardContent>
       </Card>
-      {finalizedProcesses.length > 0 && (
-        <div ref={summaryRef} className="col-span-3 flex flex-col items-center">
-          <div className="md:w-3/4 w-full">
-            <GanttChart processes={resultSequence} />
+
+      {simulationResult && (
+        <div ref={summaryRef} className="col-span-1 md:col-span-2 flex flex-col items-center w-full mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="md:w-[90%] w-full bg-card rounded-xl border shadow-sm p-6 mb-8">
+            <GanttChart processes={simulationResult.sequence} />
           </div>
-          <div className="w-[90vw] flex justify-center flex-wrap md:flex-nowrap">
-            <div className="md:pl-10">
+          <div className="w-full flex justify-center flex-wrap gap-8 px-4">
+            <div className="w-full lg:w-auto">
               <SummaryTable
-                originalProcesses={finalizedProcesses}
-                scheduledProcesses={resultSequence}
-                algorithm={selectedAlgorithm}
+                processStats={simulationResult.processStats}
               />
             </div>
-
-            <SummaryStatistics
-              totalProcesses={finalizedProcesses.length}
-              scheduledProcesses={resultSequence}
-            />
+            <div className="w-full lg:w-auto">
+              <SummaryStatistics
+                stats={simulationResult.stats}
+              />
+            </div>
           </div>
         </div>
       )}

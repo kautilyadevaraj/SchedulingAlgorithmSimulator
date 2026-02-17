@@ -1,83 +1,122 @@
-// shortestJobFirst.ts
+// ShortestJobFirst.ts
 
-// Define the Process type
-type Process = {
+/**
+ * Define the Process type
+ */
+export type Process = {
   process_id: number;
   arrival_time: number;
   burst_time: number;
   background: string;
 };
 
-  
-  /**
-   * Applies the Shortest Job First (SJF) scheduling algorithm on an array of process objects.
-   *
-   * @param {Process[]} processes - Array of process objects, each having arrival_time, burst_time, and background properties.
-   * @returns {Process[]} - Array of processes, scheduled based on the SJF algorithm.
-   */
-  export function shortestJobFirst(processes: Process[]): Process[] {
-    // Clone and sort the processes by arrival time to avoid side effects
-    const sortedProcesses = [...processes].sort(
-      (a, b) => a.arrival_time - b.arrival_time
-    );
-  
-    const result: Process[] = [];
-    const availableProcesses: Process[] = [];
-    let currentTime = 0;
-    let index = 0;
-  
-    while (index < sortedProcesses.length || availableProcesses.length > 0) {
-      // Move processes that have arrived by `currentTime` into the available processes queue
-      while (index < sortedProcesses.length && sortedProcesses[index].arrival_time <= currentTime) {
-        availableProcesses.push(sortedProcesses[index]);
-        index++;
-      }
-  
-      // If there are available processes, pick the one with the shortest burst time
-      if (availableProcesses.length > 0) {
-        // Sort by burst time to find the shortest job available
-        availableProcesses.sort((a, b) => a.burst_time - b.burst_time);
-        const nextProcess = availableProcesses.shift()!;
-  
-        // Add the selected process to the result and advance `currentTime`
-        result.push({
-          ...nextProcess,
-          arrival_time: currentTime, // Start time of this process
-        });
-  
-        currentTime += nextProcess.burst_time; // Process runs to completion
-      } else {
-        // If no processes are available, create an idle gap until the next process arrives
-        const nextProcess = sortedProcesses[index];
-        const gapDuration = nextProcess.arrival_time - currentTime;
-        result.push({
-          process_id : -1,
-          arrival_time: -1,
-          burst_time: gapDuration,
-          background: "transparent",
-        });
-        currentTime += gapDuration;
-      }
-    }
-  
-    const mergedResult: Process[] = [];
-    for (let i = 0; i < result.length; i++) {
-      const currentProcess = result[i];
+export type ScheduledProcess = Process & {
+  startTime: number;
+  endTime: number;
+  waitingTime: number;
+  turnaroundTime: number;
+};
 
-      if (
-        mergedResult.length > 0 &&
-        mergedResult[mergedResult.length - 1].process_id ===
-          currentProcess.process_id
-      ) {
-        // Merge with the previous process if the background is the same
-        mergedResult[mergedResult.length - 1].burst_time +=
-          currentProcess.burst_time;
-      } else {
-        // Otherwise, add as a new entry
-        mergedResult.push({ ...currentProcess });
-      }
+export type SimulationResult = {
+  sequence: Process[]; // For Gantt Chart (includes idle time with process_id -1)
+  stats: {
+    avgWaitingTime: number;
+    avgTurnaroundTime: number;
+    cpuUtilization: number;
+    throughput: number;
+  };
+  processStats: ScheduledProcess[];
+};
+
+/**
+ * Applies the Shortest Job First (SJF) non-preemptive scheduling algorithm.
+ */
+export function shortestJobFirst(processes: Process[]): SimulationResult {
+  const sortedByArrival = [...processes].sort((a, b) => {
+    if (a.arrival_time !== b.arrival_time) return a.arrival_time - b.arrival_time;
+    return a.process_id - b.process_id;
+  });
+
+  const sequence: Process[] = [];
+  const processStats: ScheduledProcess[] = [];
+  const readyQueue: Process[] = [];
+  let currentTime = 0;
+  let index = 0;
+  const totalBurstTime = processes.reduce((sum, p) => sum + p.burst_time, 0);
+
+  while (index < sortedByArrival.length || readyQueue.length > 0) {
+    while (index < sortedByArrival.length && sortedByArrival[index].arrival_time <= currentTime) {
+      readyQueue.push(sortedByArrival[index]);
+      index++;
     }
 
-    return mergedResult;
+    if (readyQueue.length > 0) {
+      readyQueue.sort((a, b) => {
+        if (a.burst_time !== b.burst_time) return a.burst_time - b.burst_time;
+        if (a.arrival_time !== b.arrival_time) return a.arrival_time - b.arrival_time;
+        return a.process_id - b.process_id;
+      });
+
+      const next = readyQueue.shift()!;
+      const startTime = currentTime;
+      const waitingTime = startTime - next.arrival_time;
+      const turnaroundTime = waitingTime + next.burst_time;
+      const endTime = startTime + next.burst_time;
+
+      sequence.push({ ...next, arrival_time: startTime });
+      processStats.push({ ...next, startTime, endTime, waitingTime, turnaroundTime });
+
+      currentTime = endTime;
+    } else {
+      const nextArrival = sortedByArrival[index].arrival_time;
+      const idleDuration = nextArrival - currentTime;
+      sequence.push({
+        process_id: -1,
+        arrival_time: -1,
+        burst_time: idleDuration,
+        background: "transparent",
+      });
+      currentTime = nextArrival;
+    }
   }
+
+  const totalTime = currentTime - (processes.length > 0 ? Math.min(...processes.map(p => p.arrival_time)) : 0);
+  const avgWaitingTime = processStats.reduce((sum, p) => sum + p.waitingTime, 0) / (processes.length || 1);
+  const avgTurnaroundTime = processStats.reduce((sum, p) => sum + p.turnaroundTime, 0) / (processes.length || 1);
+  const cpuUtilization = (totalBurstTime / (totalTime || 1)) * 100;
+  const throughput = processes.length / (totalTime || 1);
+
+  return {
+    sequence: mergeConsecutive(sequence),
+    processStats,
+    stats: {
+      avgWaitingTime,
+      avgTurnaroundTime,
+      cpuUtilization,
+      throughput
+    }
+  };
+}
+
+/**
+ * Merges consecutive blocks of the same process (or idle time) in the sequence.
+ */
+function mergeConsecutive(sequence: Process[]): Process[] {
+  if (sequence.length === 0) return [];
+
+  const merged: Process[] = [{ ...sequence[0] }];
+
+  for (let i = 1; i < sequence.length; i++) {
+    const current = sequence[i];
+    const last = merged[merged.length - 1];
+
+    if (current.process_id === last.process_id) {
+      last.burst_time += current.burst_time;
+    } else {
+      merged.push({ ...current });
+    }
+  }
+
+  return merged;
+}
   

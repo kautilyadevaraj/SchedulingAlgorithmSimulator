@@ -1,44 +1,37 @@
-import { turnaroundTime, waitingTime, cpuUtilization, totalExecutionTime } from "./SummaryTable"
 import AnimatedShinyText from "./ui/animated-shiny-text";
+import { Card, CardContent } from "./ui/card";
 
-type Process = {
-  process_id: number;
-  arrival_time: number;
-  burst_time: number;
-  background: string;
+type SummaryStatisticsProps = {
+  stats: {
+    avgWaitingTime: number;
+    avgTurnaroundTime: number;
+    cpuUtilization: number;
+    throughput: number;
+  };
 };
 
-type totalProcessesType = {
-  totalProcesses: number;
-  scheduledProcesses: Process[];
-};
+export default function SummaryStatistics({ stats }: SummaryStatisticsProps) {
+  const displayStats = [
+    { label: "Avg Waiting Time", value: stats.avgWaitingTime.toFixed(2) },
+    { label: "Avg Turnaround Time", value: stats.avgTurnaroundTime.toFixed(2) },
+    { label: "Throughput", value: stats.throughput.toFixed(2) },
+    { label: "CPU Utilization", value: `${stats.cpuUtilization.toFixed(2)}%` },
+  ];
 
-export default function SummaryStatistics({ totalProcesses, scheduledProcesses }: totalProcessesType) {
-    console.log(scheduledProcesses);
-
-    return (
-      <div className="flex flex-col justify-evenly items-center md:w-1/2 md:pl-10 pt-4">
-        <div className="flex justify-evenly w-full text-center">
-          <div className="text-sm md:text-lg">
-            <AnimatedShinyText>Avg Waiting Time</AnimatedShinyText>
-
-            {Math.round((waitingTime / totalProcesses) * 100) / 100}
-          </div>
-          <div className="text-sm md:text-lg">
-            <AnimatedShinyText>Avg Turnaround Time</AnimatedShinyText>
-            {Math.round((turnaroundTime / totalProcesses) * 100) / 100}
-          </div>
-        </div>
-        <div className="flex justify-evenly w-full text-center">
-          <div className="text-sm md:text-lg">
-            <AnimatedShinyText>Throughput</AnimatedShinyText>
-            {Math.round((totalProcesses / totalExecutionTime) * 100) / 100}
-          </div>
-          <div className="text-sm md:text-lg">
-            <AnimatedShinyText>CPU Utilization</AnimatedShinyText>
-            {Math.round(cpuUtilization * 100) / 100}%
-          </div>
-        </div>
-      </div>
-    );
+  return (
+    <div className="grid grid-cols-2 gap-4 w-full lg:max-w-md">
+      {displayStats.map((stat) => (
+        <Card key={stat.label} className="bg-muted/30 border-none shadow-none">
+          <CardContent className="p-4 flex flex-col items-center justify-center">
+            <AnimatedShinyText className="text-xs font-semibold uppercase tracking-wider mb-1">
+              {stat.label}
+            </AnimatedShinyText>
+            <span className="text-2xl font-bold text-primary">
+              {stat.value}
+            </span>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 }
