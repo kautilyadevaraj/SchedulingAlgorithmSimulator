@@ -11,7 +11,7 @@ export default function Home() {
         <div className="w-full max-w-6xl flex justify-between items-center mb-8 bg-card/50 backdrop-blur-md p-4 rounded-2xl border shadow-sm">
           <div className="flex-1">
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground text-center lg:text-left">
-              SJF <span className="text-primary">Simulator</span>
+              Shortest Job <span className="text-primary">Simulator</span>
             </h1>
           </div>
           <ThemeToggle />

@@ -29,11 +29,13 @@ import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
 import {
   shortestJobFirst,
+  shortestRemainingTimeFirst,
   SimulationResult,
   Process,
 } from "@/lib/ShortestJobFirst";
 import SummaryStatistics from "./SummaryStatistics";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const FormSchema = z.object({});
 
@@ -47,12 +49,13 @@ export default function MainForm() {
   });
 
   const [processes, setProcesses] = useState<Process[]>([]);
-  const [simulationResult, setSimulationResult] =
-    useState<SimulationResult | null>(null);
+  const [simulationResults, setSimulationResults] = useState<{
+    SJF: SimulationResult | null;
+    SRTF: SimulationResult | null;
+  }>({ SJF: null, SRTF: null });
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
-  const [descriptionRevealed, setDescriptionRevealed] = useState(false);
   const [hasLoadedFromUrl, setHasLoadedFromUrl] = useState(false);
   const [shouldAutoSubmit, setShouldAutoSubmit] = useState(false);
 
@@ -65,8 +68,13 @@ export default function MainForm() {
         toast.error("¡No agregaste procesos!");
         return;
       }
-      const result = shortestJobFirst(processes);
-      setSimulationResult(result);
+      const sjfResult = shortestJobFirst(processes);
+      const srtfResult = shortestRemainingTimeFirst(processes);
+
+      setSimulationResults({
+        SJF: sjfResult,
+        SRTF: srtfResult,
+      });
       setFinalizedProcesses([...processes]);
       setTimeout(() => {
         summaryRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -127,7 +135,7 @@ export default function MainForm() {
       params.delete("processes");
     }
 
-    params.set("algo", "SJF");
+    params.set("algo", "SJ");
 
     const newQuery = params.toString();
     const currentQuery = window.location.search.replace(/^\?/, "");
@@ -209,16 +217,20 @@ export default function MainForm() {
         <div className="lg:col-span-2 flex flex-col space-y-6">
           <div className="border p-8 rounded-2xl bg-card/60 backdrop-blur-xl shadow-lg ring-1 ring-border/50">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <div className="space-y-4">
                   <FormLabel className="text-3xl font-extrabold tracking-tight">
-                    Shortest Job First
+                    Shortest Job
                   </FormLabel>
                   <div className="text-base text-muted-foreground p-5 bg-muted/50 rounded-xl border border-border/50">
                     <p className="leading-relaxed">
-                      SJF selecciona el proceso en espera con el menor tiempo de
-                      ráfaga (burst time) para ejecutarse a continuación. Es
-                      óptimo para minimizar el tiempo de espera promedio.
+                      Compará las dos variantes: <strong>SJF</strong>{" "}
+                      (No-preventivo) y <strong>SRTF</strong> (Preventivo).
+                      Ideal para entender cómo la capacidad de interrumpir
+                      procesos reduce el tiempo de espera promedio.
                     </p>
                   </div>
                 </div>
@@ -227,7 +239,7 @@ export default function MainForm() {
                     type="submit"
                     className="flex-1 font-bold py-7 text-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Simular SJF
+                    Simular Ambos
                   </Button>
                   <Button
                     type="button"
@@ -251,7 +263,9 @@ export default function MainForm() {
           <CardHeader className="pb-6 bg-muted/40 border-b backdrop-blur-md">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl font-bold">Cola de Procesos</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  Cola de Procesos
+                </CardTitle>
                 <CardDescription className="text-base">
                   Configura los procesos para la simulación
                 </CardDescription>
@@ -294,10 +308,16 @@ export default function MainForm() {
                         Tiempos
                       </span>
                       <p className="text-xs font-bold leading-none">
-                        Llegada: <span className="text-primary">{process.arrival_time}</span>
+                        Llegada:{" "}
+                        <span className="text-primary">
+                          {process.arrival_time}
+                        </span>
                       </p>
                       <p className="text-xs font-bold leading-none mt-1.5">
-                        Ráfaga: <span className="text-primary">{process.burst_time}</span>
+                        Ráfaga:{" "}
+                        <span className="text-primary">
+                          {process.burst_time}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -305,15 +325,22 @@ export default function MainForm() {
               ))}
               {processes.length === 0 && (
                 <div className="col-span-full text-center py-12 text-muted-foreground border-2 border-dashed rounded-xl bg-muted/20">
-                  <p className="italic text-sm font-medium">No hay procesos agregados aún.</p>
-                  <p className="text-xs mt-1">Hacé clic en "Agregar Proceso" para comenzar.</p>
+                  <p className="italic text-sm font-medium">
+                    No hay procesos agregados aún.
+                  </p>
+                  <p className="text-xs mt-1">
+                    Hacé clic en "Agregar Proceso" para comenzar.
+                  </p>
                 </div>
               )}
             </div>
             <div className="flex gap-4 mt-8">
               <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="default" className="flex-1 font-bold py-6 bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                  <Button
+                    variant="default"
+                    className="flex-1 font-bold py-6 bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                  >
                     Agregar Proceso
                   </Button>
                 </PopoverTrigger>
@@ -331,7 +358,7 @@ export default function MainForm() {
               <Button
                 onClick={() => {
                   setProcesses([]);
-                  setSimulationResult(null);
+                  setSimulationResults({ SJF: null, SRTF: null });
                   setFinalizedProcesses([]);
                 }}
                 variant="destructive"
@@ -345,23 +372,63 @@ export default function MainForm() {
         </Card>
       </div>
 
-      {simulationResult && (
+      {simulationResults.SJF && simulationResults.SRTF && (
         <div
           ref={summaryRef}
-          className="w-full flex flex-col items-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700"
+          className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700"
         >
-          <div className="w-full bg-card/60 backdrop-blur-xl rounded-2xl border-2 shadow-xl p-8">
-            <GanttChart processes={simulationResult.sequence} />
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-            <div className="w-full order-2 lg:order-1">
-              <SummaryTable processStats={simulationResult.processStats} />
+          <Tabs defaultValue="sjf" className="w-full space-y-8">
+            <div className="flex justify-center">
+              <TabsList className="grid w-full max-w-md grid-cols-2 h-12">
+                <TabsTrigger value="sjf" className="font-bold text-lg">
+                  SJF (No-Preventivo)
+                </TabsTrigger>
+                <TabsTrigger value="srtf" className="font-bold text-lg">
+                  SRTF (Preventivo)
+                </TabsTrigger>
+              </TabsList>
             </div>
-            <div className="w-full order-1 lg:order-2">
-              <SummaryStatistics stats={simulationResult.stats} />
-            </div>
-          </div>
+
+            <TabsContent
+              value="sjf"
+              className="space-y-8 mt-0 focus-visible:ring-0"
+            >
+              <div className="w-full bg-card/60 backdrop-blur-xl rounded-2xl border-2 shadow-xl p-8">
+                <GanttChart processes={simulationResults.SJF.sequence} />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+                <div className="w-full order-2 lg:order-1">
+                  <SummaryTable
+                    processStats={simulationResults.SJF.processStats}
+                  />
+                </div>
+                <div className="w-full order-1 lg:order-2">
+                  <SummaryStatistics stats={simulationResults.SJF.stats} />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="srtf"
+              className="space-y-8 mt-0 focus-visible:ring-0"
+            >
+              <div className="w-full bg-card/60 backdrop-blur-xl rounded-2xl border-2 shadow-xl p-8">
+                <GanttChart processes={simulationResults.SRTF.sequence} />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+                <div className="w-full order-2 lg:order-1">
+                  <SummaryTable
+                    processStats={simulationResults.SRTF.processStats}
+                  />
+                </div>
+                <div className="w-full order-1 lg:order-2">
+                  <SummaryStatistics stats={simulationResults.SRTF.stats} />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </div>
