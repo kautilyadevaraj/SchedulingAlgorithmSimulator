@@ -203,150 +203,162 @@ export default function MainForm() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 w-full max-w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
-      <div className="col-span-1 max-w-full md:pl-14 flex flex-col items-center px-4 w-full">
-        <div className="md:max-w-[400px] border p-6 rounded-xl bg-card w-full shadow-sm">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <FormLabel className="text-2xl font-bold">
-                  Shortest Job First (SJF)
-                </FormLabel>
-                <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg border border-transparent">
-                  <p className="leading-relaxed">
-                    SJF selecciona el proceso en espera con el menor tiempo de
-                    ráfaga (burst time) para ejecutarse a continuación. Es
-                    óptimo para minimizar el tiempo de espera promedio en un
-                    entorno no apropiativo. El desempate se maneja por tiempo de
-                    llegada.
-                  </p>
+    <div className="flex flex-col items-center w-full max-w-6xl mx-auto space-y-8 px-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 w-full">
+        {/* Left Column: Form/Algo Info */}
+        <div className="lg:col-span-2 flex flex-col space-y-6">
+          <div className="border p-8 rounded-2xl bg-card/60 backdrop-blur-xl shadow-lg ring-1 ring-border/50">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
+                  <FormLabel className="text-3xl font-extrabold tracking-tight">
+                    Shortest Job First
+                  </FormLabel>
+                  <div className="text-base text-muted-foreground p-5 bg-muted/50 rounded-xl border border-border/50">
+                    <p className="leading-relaxed">
+                      SJF selecciona el proceso en espera con el menor tiempo de
+                      ráfaga (burst time) para ejecutarse a continuación. Es
+                      óptimo para minimizar el tiempo de espera promedio.
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  type="submit"
-                  className="flex-1 font-semibold py-6 text-lg"
-                >
-                  Simular SJF
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-auto px-4"
-                  onClick={handleShare}
-                  disabled={processes.length === 0}
-                  title="Compartir Simulación"
-                >
-                  <Share2 className="h-5 w-5" />
-                </Button>
-              </div>
-            </form>
-          </Form>
+                <div className="flex gap-4">
+                  <Button
+                    type="submit"
+                    className="flex-1 font-bold py-7 text-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Simular SJF
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-auto w-16 shadow-sm border-2"
+                    onClick={handleShare}
+                    disabled={processes.length === 0}
+                    title="Compartir Simulación"
+                  >
+                    <Share2 className="h-6 w-6" />
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
         </div>
-      </div>
 
-      <Card className="md:w-[500px] w-full max-w-full col-span-1 mx-4 shadow-sm">
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="text-xl">Cola de Procesos</CardTitle>
-              <CardDescription>
-                Configura los procesos para la simulación
-              </CardDescription>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={generateRandomProcesses}
-              title="Generar datos aleatorios"
-            >
-              <Dices className="h-5 w-5" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-6 w-full">
-          <div className="flex justify-start flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2">
-            {processes.map((process, index) => (
-              <div
-                key={process.process_id}
-                className="flex items-center space-x-3 p-3 rounded-lg border bg-accent/30 min-w-[140px]"
+        {/* Right Column: Process Queue */}
+        <Card className="lg:col-span-3 shadow-lg border-2 border-primary/5 rounded-2xl overflow-hidden bg-card/60 backdrop-blur-xl">
+          <CardHeader className="pb-6 bg-muted/40 border-b backdrop-blur-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl font-bold">Cola de Procesos</CardTitle>
+                <CardDescription className="text-base">
+                  Configura los procesos para la simulación
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 rounded-full border-2"
+                onClick={generateRandomProcesses}
+                title="Generar datos aleatorios"
               >
+                <Dices className="h-5 w-5 text-primary" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2 py-2">
+              {processes.map((process, index) => (
                 <div
-                  className="flex justify-center items-center h-10 w-10 rounded-md shadow-inner relative group"
-                  style={{ background: process.background }}
+                  key={process.process_id}
+                  className="flex items-center justify-between p-4 rounded-xl border bg-card hover:border-primary/50 transition-colors shadow-sm"
                 >
-                  <Pencil1Icon
-                    className="h-6 w-6 text-white bg-black/40 p-1 opacity-0 group-hover:opacity-100 rounded cursor-pointer transition-opacity"
-                    onClick={() => handleEditProcess(index)}
+                  <div className="flex items-center space-x-4">
+                    <div
+                      className="flex justify-center items-center h-12 w-12 rounded-xl shadow-lg relative group overflow-hidden shrink-0"
+                      style={{ background: process.background }}
+                    >
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Pencil1Icon
+                          className="h-6 w-6 text-white cursor-pointer"
+                          onClick={() => handleEditProcess(index)}
+                        />
+                      </div>
+                      <span className="text-white font-black text-sm drop-shadow-md group-hover:hidden">
+                        P{process.process_id}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-black text-muted-foreground leading-none mb-1">
+                        Tiempos
+                      </span>
+                      <p className="text-xs font-bold leading-none">
+                        Llegada: <span className="text-primary">{process.arrival_time}</span>
+                      </p>
+                      <p className="text-xs font-bold leading-none mt-1.5">
+                        Ráfaga: <span className="text-primary">{process.burst_time}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {processes.length === 0 && (
+                <div className="col-span-full text-center py-12 text-muted-foreground border-2 border-dashed rounded-xl bg-muted/20">
+                  <p className="italic text-sm font-medium">No hay procesos agregados aún.</p>
+                  <p className="text-xs mt-1">Hacé clic en "Agregar Proceso" para comenzar.</p>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-4 mt-8">
+              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="default" className="flex-1 font-bold py-6 bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                    Agregar Proceso
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" align="end">
+                  <ProcessForm
+                    addProcess={addProcess}
+                    initialValues={
+                      currentEditIndex !== null
+                        ? processes[currentEditIndex]
+                        : undefined
+                    }
                   />
-                  <span className="text-white font-bold text-xs drop-shadow-md group-hover:hidden">
-                    P{process.process_id}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold">
-                    Llegada: {process.arrival_time}
-                  </p>
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    Ráfaga: {process.burst_time}
-                  </p>
-                </div>
-              </div>
-            ))}
-            {processes.length === 0 && (
-              <div className="w-full text-center py-8 text-muted-foreground italic text-sm">
-                No hay procesos agregados.
-              </div>
-            )}
-          </div>
-          <div className="flex gap-3 justify-center">
-            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="flex-1 max-w-[150px]">
-                  Agregar Proceso
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <ProcessForm
-                  addProcess={addProcess}
-                  initialValues={
-                    currentEditIndex !== null
-                      ? processes[currentEditIndex]
-                      : undefined
-                  }
-                />
-              </PopoverContent>
-            </Popover>
-            <Button
-              onClick={() => {
-                setProcesses([]);
-                setSimulationResult(null);
-                setFinalizedProcesses([]);
-              }}
-              variant="destructive"
-              className="flex-1 max-w-[150px]"
-              disabled={processes.length === 0}
-            >
-              Limpiar Todo
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                </PopoverContent>
+              </Popover>
+              <Button
+                onClick={() => {
+                  setProcesses([]);
+                  setSimulationResult(null);
+                  setFinalizedProcesses([]);
+                }}
+                variant="destructive"
+                className="flex-1 font-bold py-6"
+                disabled={processes.length === 0}
+              >
+                Limpiar Todo
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {simulationResult && (
         <div
           ref={summaryRef}
-          className="col-span-1 md:col-span-2 flex flex-col items-center w-full mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+          className="w-full flex flex-col items-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700"
         >
-          <div className="md:w-[90%] w-full bg-card rounded-xl border shadow-sm p-6 mb-8">
+          <div className="w-full bg-card/60 backdrop-blur-xl rounded-2xl border-2 shadow-xl p-8">
             <GanttChart processes={simulationResult.sequence} />
           </div>
-          <div className="w-full flex justify-center flex-wrap gap-8 px-4">
-            <div className="w-full lg:w-auto">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+            <div className="w-full order-2 lg:order-1">
               <SummaryTable processStats={simulationResult.processStats} />
             </div>
-            <div className="w-full lg:w-auto">
+            <div className="w-full order-1 lg:order-2">
               <SummaryStatistics stats={simulationResult.stats} />
             </div>
           </div>

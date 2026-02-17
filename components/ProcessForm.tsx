@@ -121,7 +121,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit">Enviar</Button>
+        <Button type="submit" className="w-full font-bold py-6">Agregar Proceso</Button>
       </form>
     </Form>
   );

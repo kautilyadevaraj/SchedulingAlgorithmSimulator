@@ -24,7 +24,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
   // Reset animation key when processes change
   useEffect(() => {
     setAnimationKey((prevKey) => prevKey + 1);
-  }, [processes.length]);
+  }, [processes]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -55,74 +55,95 @@ const GanttChart: React.FC<GanttChartProps> = ({ processes }) => {
   };
 
   return (
-    <div className="w-full shadow-md pt-10">
-      <h2 className="text-lg font-semibold pl-2 mb-4 italic">Diagrama de Gantt</h2>
-      <div className="h-fit p-1">
-        {/* Use animationKey to force reanimation */}
-        <motion.div
-          className="flex space-x-1.5 p-1.5"
-          key={animationKey} // Use the animationKey here
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {processes.map((process, index) => {
-            const isGradient = process.background.includes("gradient");
-            const widthPercentage = (process.burst_time / totalTime) * 100;
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-black tracking-tight italic text-primary/80">
+          Diagrama de Gantt
+        </h2>
+        <div className="flex items-center space-x-2 text-xs font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span>SIMULACIÓN ACTIVA</span>
+        </div>
+      </div>
+      
+      <div className="relative overflow-x-auto pb-8 hide-scrollbar">
+        <div className="min-w-[600px]">
+          {/* Gantt Bars */}
+          <motion.div
+            className="flex w-full rounded-xl overflow-hidden shadow-inner bg-muted/20 border-2"
+            key={animationKey}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {processes.map((process, index) => {
+              const isGradient = process.background.includes("gradient");
+              const widthPercentage = (process.burst_time / totalTime) * 100;
 
-            return (
-              <motion.div
-                key={`${process.process_id}-${index}`}
-                className="relative flex items-center justify-center text-white text-xs font-medium h-16"
-                style={{
-                  width: `${widthPercentage}%`,
-                  ...(isGradient
-                    ? { backgroundImage: process.background }
-                    : { backgroundColor: process.background }),
-                  backgroundSize: "cover",
-                  textShadow: "0 1px 3px rgba(0, 0, 0, 0.7)",
-                }}
-                variants={itemVariants}
-              >
-                <span>
-                  {process.arrival_time === -1
-                    ? `Ocio`
-                    : `P${process.process_id}`}
-                </span>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        <div className="flex space-x-1.5">
-          {processes.map((process, index) => {
-            const widthPercentage = (process.burst_time / totalTime) * 100;
-            const displayTime = time;
-            time += process.burst_time;
-
-            return (
-              <div
-                key={`time-${process.process_id}-${index}`}
-                className={`relative flex text-white text-xs font-medium ${
-                  index === processes.length - 1 ? "flex justify-between" : ""
-                }`}
-                style={{
-                  width: `${widthPercentage}%`,
-                }}
-              >
-                <span
-                  className={`${
-                    index !== processes.length - 1 && index !== 0
-                      ? "absolute -left-1.5"
-                      : ""
-                  }`}
+              return (
+                <motion.div
+                  key={`${process.process_id}-${index}`}
+                  className="relative flex items-center justify-center text-white text-sm font-black h-20 border-r border-white/10 last:border-r-0 group"
+                  style={{
+                    width: `${widthPercentage}%`,
+                    ...(isGradient
+                      ? { backgroundImage: process.background }
+                      : { backgroundColor: process.background }),
+                    backgroundSize: "cover",
+                    textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
+                  }}
+                  variants={itemVariants}
                 >
-                  {displayTime}
-                </span>
-                {index === processes.length - 1 && <span>{time}</span>}
-              </div>
-            );
-          })}
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+                  <span className="relative z-10">
+                    {process.arrival_time === -1
+                      ? `IDLE`
+                      : `P${process.process_id}`}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          {/* Time Scale */}
+          <div className="relative w-full h-10 mt-2">
+            {(() => {
+              let currentTime = 0;
+              return processes.map((process, index) => {
+                const widthPercentage = (process.burst_time / totalTime) * 100;
+                const startTime = currentTime;
+                currentTime += process.burst_time;
+                
+                return (
+                  <React.Fragment key={`time-group-${process.process_id}-${startTime}`}>
+                    {/* Start Time Label */}
+                    <div 
+                      className="absolute top-0 flex flex-col items-center"
+                      style={{ left: `${(startTime / totalTime) * 100}%`, transform: 'translateX(-50%)' }}
+                    >
+                      <div className="w-0.5 h-3 bg-muted-foreground/30 mb-1" />
+                      <span className="text-[10px] font-black text-muted-foreground bg-background px-1">
+                        {startTime}
+                      </span>
+                    </div>
+                    
+                    {/* End Time Label (only for the last process) */}
+                    {index === processes.length - 1 && (
+                      <div 
+                        className="absolute top-0 flex flex-col items-center"
+                        style={{ left: `100%`, transform: 'translateX(-50%)' }}
+                      >
+                        <div className="w-0.5 h-3 bg-muted-foreground/30 mb-1" />
+                        <span className="text-[10px] font-black text-muted-foreground bg-background px-1">
+                          {currentTime}
+                        </span>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              });
+            })()}
+          </div>
         </div>
       </div>
     </div>
