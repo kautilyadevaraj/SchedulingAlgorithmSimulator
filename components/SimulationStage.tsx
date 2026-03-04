@@ -93,24 +93,24 @@ export function SimulationStage() {
           >
             {result ? (
               <>
-                <div className="grid grid-cols-1 gap-4 overflow-hidden">
+                <div className="grid grid-cols-1 gap-4 shrink-0">
                   {viewMode === "gantt" ? (
                     <Card className="shadow-lg border-2 bg-card/60 backdrop-blur-xl overflow-hidden flex flex-col">
-                      <CardHeader className="py-3 px-4 shrink-0">
-                        <CardTitle className="text-md font-bold flex items-center gap-2">
-                          Diagrama de Gantt <span className="text-xs font-normal text-muted-foreground opacity-60">Visualización de Ejecución</span>
+                      <CardHeader className="py-2 px-4 shrink-0">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2">
+                          Diagrama de Gantt <span className="text-[10px] font-normal text-muted-foreground opacity-60">Visualización de Ejecución</span>
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="overflow-x-auto pb-4 pt-0">
+                      <CardContent className="overflow-x-auto pb-3 pt-0">
                         <div className="min-w-[600px]">
                           <GanttChart processes={result.sequence} />
                         </div>
                       </CardContent>
                     </Card>
                   ) : (
-                    <Card className="shadow-md border bg-card/40 overflow-hidden flex flex-col max-h-[400px]">
-                      <CardHeader className="py-3 px-4 shrink-0">
-                        <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Tabla de Tiempos</CardTitle>
+                    <Card className="shadow-md border bg-card/40 overflow-hidden flex flex-col h-[400px]">
+                      <CardHeader className="py-2 px-4 shrink-0">
+                        <CardTitle className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Tabla de Tiempos</CardTitle>
                       </CardHeader>
                       <CardContent className="p-0 overflow-auto">
                         <SummaryTable processStats={result.processStats} />
@@ -119,16 +119,12 @@ export function SimulationStage() {
                   )}
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-auto pr-2 pb-2">
-                  <div className="space-y-4">
-                    <Card className="border-none bg-transparent shadow-none">
-                      <CardHeader className="py-2 px-0">
-                        <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Estadísticas Globales</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <SummaryStatistics stats={result.stats} />
-                      </CardContent>
-                    </Card>
+                <div className="shrink-0 pt-2 border-t border-dashed">
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+                      Métricas de Performance
+                    </h3>
+                    <SummaryStatistics stats={result.stats} />
                   </div>
                 </div>
               </>

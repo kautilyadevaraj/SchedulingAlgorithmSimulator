@@ -47,26 +47,26 @@ export default function SummaryStatistics({ stats }: SummaryStatisticsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
       {displayStats.map((stat) => (
-        <Card key={stat.label} className="overflow-hidden border-none shadow-md bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-x-4">
-              <div className="flex flex-col space-y-1">
-                <span className="text-sm font-medium text-muted-foreground uppercase tracking-tight">
+        <Card key={stat.label} className="overflow-hidden border shadow-sm bg-card/40 backdrop-blur-sm">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl shrink-0 ${stat.bgColor}`}>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
                   {stat.label}
                 </span>
-                <div className="flex items-baseline space-x-1">
-                  <span className="text-3xl font-bold tracking-tight text-foreground">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg font-bold tracking-tight text-foreground leading-none">
                     {stat.value}
                   </span>
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="text-[10px] font-medium text-muted-foreground">
                     {stat.unit}
                   </span>
                 </div>
-              </div>
-              <div className={`p-3 rounded-2xl ${stat.bgColor}`}>
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
             </div>
           </CardContent>
