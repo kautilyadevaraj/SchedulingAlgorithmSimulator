@@ -27,6 +27,7 @@ const generateRandomColor = () => {
 type Process = {
   arrival_time: number;
   burst_time: number;
+  priority: number;
   background: string;
 };
 
@@ -39,13 +40,17 @@ const ProcessSchema = z.object({
     .number()
     .gt(0, { message: "El tiempo de ráfaga debe ser mayor a 0." }) // strictly positive
     .lte(100, { message: "El tiempo de ráfaga no puede ser mayor a 100." }),
+  priority: z.coerce
+    .number()
+    .gt(0, { message: "La prioridad debe ser mayor a 0." })
+    .lte(100, { message: "La prioridad no puede ser mayor a 100." }),
   background: z.string().nonempty({
     message: "Por favor, selecciona un color.",
   }),
 });
 
 type ProcessFormProps = {
-  addProcess: (process: Process) => void;
+  addProcess: (process: Omit<Process, "process_id">) => void;
   initialValues?: Process;
 };
 
@@ -55,6 +60,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
     defaultValues: initialValues || {
       arrival_time: 0,
       burst_time: 1,
+      priority: 1,
       background: generateRandomColor(),
     },
   });
@@ -73,6 +79,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
     form.reset({
       arrival_time: 0,
       burst_time: 1,
+      priority: 1,
       background: generateRandomColor(),
     });
   };
@@ -101,6 +108,19 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
               <FormLabel>Tiempo de Ráfaga</FormLabel>
               <FormControl>
                 <Input placeholder="Ráfaga por defecto: 1" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="priority"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Prioridad</FormLabel>
+              <FormControl>
+                <Input placeholder="Prioridad por defecto: 1" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

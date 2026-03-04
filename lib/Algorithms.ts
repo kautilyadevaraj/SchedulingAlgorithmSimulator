@@ -7,7 +7,17 @@ export type Process = {
   process_id: number;
   arrival_time: number;
   burst_time: number;
+  priority: number;
   background: string;
+};
+
+export type AlgorithmConfig = {
+  quantum?: number;
+  mlfqQueues?: {
+    id: number;
+    algorithm: "RR" | "SRTF" | "FCFS";
+    quantum?: number;
+  }[];
 };
 
 export type ScheduledProcess = Process & {
@@ -18,6 +28,7 @@ export type ScheduledProcess = Process & {
 };
 
 export type SimulationResult = {
+  algorithmName: string;
   sequence: Process[]; // For Gantt Chart (includes idle time with process_id -1)
   stats: {
     avgWaitingTime: number;
@@ -29,81 +40,12 @@ export type SimulationResult = {
 };
 
 /**
- * Applies the Shortest Job First (SJF) non-preemptive scheduling algorithm.
- */
-export function shortestJobFirst(processes: Process[]): SimulationResult {
-  const sortedByArrival = [...processes].sort((a, b) => {
-    if (a.arrival_time !== b.arrival_time) return a.arrival_time - b.arrival_time;
-    return a.process_id - b.process_id;
-  });
-
-  const sequence: Process[] = [];
-  const processStats: ScheduledProcess[] = [];
-  const readyQueue: Process[] = [];
-  let currentTime = 0;
-  let index = 0;
-  const totalBurstTime = processes.reduce((sum, p) => sum + p.burst_time, 0);
-
-  while (index < sortedByArrival.length || readyQueue.length > 0) {
-    while (index < sortedByArrival.length && sortedByArrival[index].arrival_time <= currentTime) {
-      readyQueue.push(sortedByArrival[index]);
-      index++;
-    }
-
-    if (readyQueue.length > 0) {
-      readyQueue.sort((a, b) => {
-        if (a.burst_time !== b.burst_time) return a.burst_time - b.burst_time;
-        if (a.arrival_time !== b.arrival_time) return a.arrival_time - b.arrival_time;
-        return a.process_id - b.process_id;
-      });
-
-      const next = readyQueue.shift()!;
-      const startTime = currentTime;
-      const waitingTime = startTime - next.arrival_time;
-      const turnaroundTime = waitingTime + next.burst_time;
-      const endTime = startTime + next.burst_time;
-
-      sequence.push({ ...next, arrival_time: startTime });
-      processStats.push({ ...next, startTime, endTime, waitingTime, turnaroundTime });
-
-      currentTime = endTime;
-    } else {
-      const nextArrival = sortedByArrival[index].arrival_time;
-      const idleDuration = nextArrival - currentTime;
-      sequence.push({
-        process_id: -1,
-        arrival_time: -1,
-        burst_time: idleDuration,
-        background: "transparent",
-      });
-      currentTime = nextArrival;
-    }
-  }
-
-  const totalTime = currentTime - (processes.length > 0 ? Math.min(...processes.map(p => p.arrival_time)) : 0);
-  const avgWaitingTime = processStats.reduce((sum, p) => sum + p.waitingTime, 0) / (processes.length || 1);
-  const avgTurnaroundTime = processStats.reduce((sum, p) => sum + p.turnaroundTime, 0) / (processes.length || 1);
-  const cpuUtilization = (totalBurstTime / (totalTime || 1)) * 100;
-  const throughput = processes.length / (totalTime || 1);
-
-  return {
-    sequence: mergeConsecutive(sequence),
-    processStats,
-    stats: {
-      avgWaitingTime,
-      avgTurnaroundTime,
-      cpuUtilization,
-      throughput
-    }
-  };
-}
-
-/**
  * Applies the Shortest Remaining Time First (SRTF) preemptive scheduling algorithm.
  */
 export function shortestRemainingTimeFirst(processes: Process[]): SimulationResult {
   if (processes.length === 0) {
     return {
+      algorithmName: "SRTF",
       sequence: [],
       processStats: [],
       stats: { avgWaitingTime: 0, avgTurnaroundTime: 0, cpuUtilization: 0, throughput: 0 },
@@ -112,23 +54,16 @@ export function shortestRemainingTimeFirst(processes: Process[]): SimulationResu
 
   const n = processes.length;
   const remainingTime = new Map<number, number>();
-  const arrivalTimeMap = new Map<number, number>();
-  const burstTimeMap = new Map<number, number>();
-  const backgroundMap = new Map<number, string>();
   const firstStartTime = new Map<number, number>();
   const completionTime = new Map<number, number>();
 
   processes.forEach((p) => {
     remainingTime.set(p.process_id, p.burst_time);
-    arrivalTimeMap.set(p.process_id, p.arrival_time);
-    burstTimeMap.set(p.process_id, p.burst_time);
-    backgroundMap.set(p.process_id, p.background);
   });
 
   const sequence: Process[] = [];
   let currentTime = Math.min(...processes.map((p) => p.arrival_time));
   let completed = 0;
-  let lastProcessId = -2; // Start with something that won't match any ID
 
   // If there's a gap between 0 and the first arrival
   if (currentTime > 0) {
@@ -136,6 +71,7 @@ export function shortestRemainingTimeFirst(processes: Process[]): SimulationResu
       process_id: -1,
       arrival_time: -1,
       burst_time: currentTime,
+      priority: 0,
       background: "transparent",
     });
   }
@@ -176,17 +112,16 @@ export function shortestRemainingTimeFirst(processes: Process[]): SimulationResu
         completed++;
         completionTime.set(id, currentTime);
       }
-      lastProcessId = id;
     } else {
       // Idle time
       sequence.push({
         process_id: -1,
         arrival_time: -1,
         burst_time: 1,
+        priority: 0,
         background: "transparent",
       });
       currentTime++;
-      lastProcessId = -1;
     }
   }
 
@@ -207,6 +142,7 @@ export function shortestRemainingTimeFirst(processes: Process[]): SimulationResu
   const totalBurstTime = processes.reduce((sum, p) => sum + p.burst_time, 0);
   
   return {
+    algorithmName: "SRTF",
     sequence: mergeConsecutive(sequence),
     processStats,
     stats: {

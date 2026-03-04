@@ -16,17 +16,10 @@ Toda la lógica de simulación reside aquí. Es una librería pura, sin efectos 
   - `Process[]`: Array de procesos con `id`, `arrival_time`, `burst_time` y `priority`.
   - `Config`: Parámetros globales (Quantum para RRV, configuración de colas para MLFQ).
 - **Salida**: `SimulationResult[]`: Un array de resultados para facilitar la comparación inmediata.
-- **Algoritmos Soportados**:
-  - **SRTL / SRTF**: Shortest Remaining Time (Preventivo).
+- **Algoritmos Soportados (Exclusivos)**:
+  - **SRTF**: Shortest Remaining Time First (Preventivo). Es la evolución de SJF pero con capacidad de interrupción.
   - **RRV (Round Robin Virtual)**: Usa una cola auxiliar de prioridad para procesos que regresan de E/S, permitiéndoles terminar su quantum pendiente.
   - **MLFQ (Multi-Level Feedback Queue)**: Sistema de máximo 3 colas, con algoritmos y niveles configurables por el usuario.
-
-### 2. Interfaz de Usuario (UI) "Single-Screen"
-
-- **Entrada Única**: Los procesos y tiempos se cargan una sola vez y aplican a todos los algoritmos simultáneamente.
-- **Grilla de Comparación**: Una vista principal muestra tarjetas con métricas clave (Waiting Time, Turnaround, etc.) de cada algoritmo.
-- **Detalle Gantt**: Al hacer clic en un algoritmo de la grilla, se abre un **Modal** con el Diagrama de Gantt detallado para un análisis profundo sin perder el contexto.
-- **Zero Scroll / Zero Clutter**: Todo debe caber en una pantalla. Menos botones, más feedback visual.
 
 ---
 
@@ -34,10 +27,11 @@ Toda la lógica de simulación reside aquí. Es una librería pura, sin efectos 
 
 ### Reglas de Oro
 
-1. **Dummies First**: Si una funcionalidad es difícil de explicar, es difícil de usar. Simplificá la UI.
-2. **Core Integrity**: Cualquier cambio en la lógica de cálculo DEBE hacerse exclusivamente en `lib/Algorithms.ts`.
-3. **Shared State**: Los inputs son globales. Si cambio un `burst_time` en la tabla, todos los algoritmos se re-calculan al instante.
-4. **Visualización Responsiva**: Los modales y la grilla deben adaptarse usando Tailwind CSS.
+1. **Strict Algorithm Focus**: El simulador se enfoca ÚNICAMENTE en **SRTF**, **RRV** y **MLFQ**. No implementar FCFS, SJF (no-preventivo) ni otros algoritmos fuera de esta tríada.
+2. **Dummies First**: Si una funcionalidad es difícil de explicar, es difícil de usar. Simplificá la UI.
+3. **Core Integrity**: Cualquier cambio en la lógica de cálculo DEBE hacerse exclusivamente en `lib/Algorithms.ts`.
+4. **Shared State**: Los inputs son globales. Si cambio un `burst_time` en la tabla, todos los algoritmos se re-calculan al instante.
+5. **Visualización Responsiva**: Los modales y la grilla deben adaptarse usando Tailwind CSS.
 
 ---
 

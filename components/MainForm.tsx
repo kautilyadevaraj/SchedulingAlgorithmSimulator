@@ -28,7 +28,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
 import {
-  shortestJobFirst,
   shortestRemainingTimeFirst,
   SimulationResult,
   Process,
@@ -50,9 +49,10 @@ export default function MainForm() {
 
   const [processes, setProcesses] = useState<Process[]>([]);
   const [simulationResults, setSimulationResults] = useState<{
-    SJF: SimulationResult | null;
     SRTF: SimulationResult | null;
-  }>({ SJF: null, SRTF: null });
+    RRV: SimulationResult | null;
+    MLFQ: SimulationResult | null;
+  }>({ SRTF: null, RRV: null, MLFQ: null });
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null);
   const [finalizedProcesses, setFinalizedProcesses] = useState<Process[]>([]);
@@ -68,12 +68,15 @@ export default function MainForm() {
         toast.error("¡No agregaste procesos!");
         return;
       }
-      const sjfResult = shortestJobFirst(processes);
       const srtfResult = shortestRemainingTimeFirst(processes);
+      // RRV and MLFQ will be implemented soon, using SRTF as placeholder to avoid nulls
+      const rrvResult = srtfResult; 
+      const mlfqResult = srtfResult;
 
       setSimulationResults({
-        SJF: sjfResult,
         SRTF: srtfResult,
+        RRV: rrvResult,
+        MLFQ: mlfqResult,
       });
       setFinalizedProcesses([...processes]);
       setTimeout(() => {
@@ -199,6 +202,7 @@ export default function MainForm() {
         process_id: i + 1,
         arrival_time: Math.floor(Math.random() * 10),
         burst_time: Math.floor(Math.random() * 10) + 1,
+        priority: Math.floor(Math.random() * 5) + 1,
         background: generateRandomColor(),
       });
     }
@@ -358,7 +362,7 @@ export default function MainForm() {
               <Button
                 onClick={() => {
                   setProcesses([]);
-                  setSimulationResults({ SJF: null, SRTF: null });
+                  setSimulationResults({ SRTF: null, RRV: null, MLFQ: null });
                   setFinalizedProcesses([]);
                 }}
                 variant="destructive"
@@ -372,42 +376,25 @@ export default function MainForm() {
         </Card>
       </div>
 
-      {simulationResults.SJF && simulationResults.SRTF && (
+      {simulationResults.SRTF && (
         <div
           ref={summaryRef}
           className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700"
         >
-          <Tabs defaultValue="sjf" className="w-full space-y-8">
+          <Tabs defaultValue="srtf" className="w-full space-y-8">
             <div className="flex justify-center">
-              <TabsList className="grid w-full max-w-md grid-cols-2 h-12">
-                <TabsTrigger value="sjf" className="font-bold text-lg">
-                  SJF (No-Preventivo)
-                </TabsTrigger>
+              <TabsList className="grid w-full max-w-md grid-cols-3 h-12">
                 <TabsTrigger value="srtf" className="font-bold text-lg">
-                  SRTF (Preventivo)
+                  SRTF
+                </TabsTrigger>
+                <TabsTrigger value="rrv" className="font-bold text-lg">
+                  RRV
+                </TabsTrigger>
+                <TabsTrigger value="mlfq" className="font-bold text-lg">
+                  MLFQ
                 </TabsTrigger>
               </TabsList>
             </div>
-
-            <TabsContent
-              value="sjf"
-              className="space-y-8 mt-0 focus-visible:ring-0"
-            >
-              <div className="w-full bg-card/60 backdrop-blur-xl rounded-2xl border-2 shadow-xl p-8">
-                <GanttChart processes={simulationResults.SJF.sequence} />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-                <div className="w-full order-2 lg:order-1">
-                  <SummaryTable
-                    processStats={simulationResults.SJF.processStats}
-                  />
-                </div>
-                <div className="w-full order-1 lg:order-2">
-                  <SummaryStatistics stats={simulationResults.SJF.stats} />
-                </div>
-              </div>
-            </TabsContent>
 
             <TabsContent
               value="srtf"
@@ -425,6 +412,58 @@ export default function MainForm() {
                 </div>
                 <div className="w-full order-1 lg:order-2">
                   <SummaryStatistics stats={simulationResults.SRTF.stats} />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="rrv"
+              className="space-y-8 mt-0 focus-visible:ring-0"
+            >
+              <div className="w-full bg-card/60 backdrop-blur-xl rounded-2xl border-2 shadow-xl p-8">
+                {simulationResults.RRV && (
+                  <GanttChart processes={simulationResults.RRV.sequence} />
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+                <div className="w-full order-2 lg:order-1">
+                  {simulationResults.RRV && (
+                    <SummaryTable
+                      processStats={simulationResults.RRV.processStats}
+                    />
+                  )}
+                </div>
+                <div className="w-full order-1 lg:order-2">
+                  {simulationResults.RRV && (
+                    <SummaryStatistics stats={simulationResults.RRV.stats} />
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="mlfq"
+              className="space-y-8 mt-0 focus-visible:ring-0"
+            >
+              <div className="w-full bg-card/60 backdrop-blur-xl rounded-2xl border-2 shadow-xl p-8">
+                {simulationResults.MLFQ && (
+                  <GanttChart processes={simulationResults.MLFQ.sequence} />
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+                <div className="w-full order-2 lg:order-1">
+                  {simulationResults.MLFQ && (
+                    <SummaryTable
+                      processStats={simulationResults.MLFQ.processStats}
+                    />
+                  )}
+                </div>
+                <div className="w-full order-1 lg:order-2">
+                  {simulationResults.MLFQ && (
+                    <SummaryStatistics stats={simulationResults.MLFQ.stats} />
+                  )}
                 </div>
               </div>
             </TabsContent>
