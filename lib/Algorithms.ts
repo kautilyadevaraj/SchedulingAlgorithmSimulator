@@ -12,8 +12,8 @@ export type Process = {
 };
 
 export type AlgorithmConfig = {
-  quantum?: number;
-  mlfqQueues?: {
+  quantum: number;
+  mlfqQueues: {
     id: number;
     algorithm: "RR" | "SRTF" | "FCFS";
     quantum?: number;

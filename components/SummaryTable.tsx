@@ -56,6 +56,7 @@ export function SummaryTable({
               <TableHead className="w-[80px] text-center font-bold text-foreground">PID</TableHead>
               <TableHead className="text-center font-bold text-foreground">Llegada</TableHead>
               <TableHead className="text-center font-bold text-foreground">Ráfaga</TableHead>
+              <TableHead className="text-center font-bold text-foreground">Fin</TableHead>
               <TableHead className="text-center font-bold text-foreground">Espera</TableHead>
               <TableHead className="text-center font-bold text-foreground">Retorno</TableHead>
             </TableRow>
@@ -78,6 +79,7 @@ export function SummaryTable({
                 </TableCell>
                 <TableCell className="text-center font-semibold">{process.arrival_time}</TableCell>
                 <TableCell className="text-center font-semibold">{process.burst_time}</TableCell>
+                <TableCell className="text-center font-semibold text-emerald-500">{process.endTime}</TableCell>
                 <TableCell className="text-center font-semibold text-blue-500">{process.waitingTime}</TableCell>
                 <TableCell className="text-center font-semibold text-amber-500">{process.turnaroundTime}</TableCell>
               </TableRow>
@@ -85,7 +87,7 @@ export function SummaryTable({
           </TableBody>
           <TableFooter className="bg-muted/50 border-t-2">
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={3} className="text-right font-black uppercase text-[10px] tracking-widest text-muted-foreground pr-4">Totales</TableCell>
+              <TableCell colSpan={4} className="text-right font-black uppercase text-[10px] tracking-widest text-muted-foreground pr-4">Totales</TableCell>
               <TableCell className="text-center font-black text-blue-600">{totalWaitingTime}</TableCell>
               <TableCell className="text-center font-black text-amber-600">{totalTurnaroundTime}</TableCell>
             </TableRow>
