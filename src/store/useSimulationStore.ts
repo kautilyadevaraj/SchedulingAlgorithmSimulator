@@ -3,7 +3,9 @@ import {
   Process, 
   SimulationResult, 
   AlgorithmConfig, 
-  shortestRemainingTimeFirst 
+  shortestRemainingTimeFirst,
+  roundRobinVirtual,
+  multiLevelFeedbackQueue
 } from '@/lib/Algorithms';
 
 interface SimulationState {
@@ -99,7 +101,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   },
 
   runSimulations: () => {
-    const { processes } = get();
+    const { processes, algorithmSettings } = get();
     if (processes.length === 0) {
       set({ 
         simulationResults: { SRTF: null, RRV: null, MLFQ: null } 
@@ -107,16 +109,20 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
       return;
     }
 
-    // Run SRTF (The only one fully implemented in lib/Algorithms.ts)
+    // Run SRTF
     const srtfResult = shortestRemainingTimeFirst(processes);
     
-    // RRV and MLFQ are placeholders for now (using SRTF results) 
-    // to keep the dashboard populated until logic is implemented in lib/Algorithms.ts
+    // Run RRV
+    const rrvResult = roundRobinVirtual(processes, algorithmSettings.quantum);
+
+    // Run MLFQ
+    const mlfqResult = multiLevelFeedbackQueue(processes, algorithmSettings.mlfqQueues);
+
     set({
       simulationResults: {
         SRTF: srtfResult,
-        RRV: srtfResult, // Placeholder
-        MLFQ: srtfResult, // Placeholder
+        RRV: rrvResult,
+        MLFQ: mlfqResult,
       },
     });
   },
