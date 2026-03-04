@@ -1,29 +1,20 @@
-# CPU Scheduling Algorithm Simulator
+# CPU Scheduling Algorithm Simulator for Dummies
 
-An interactive simulator for learning and testing various CPU scheduling algorithms, including First Come First Serve (FCFS), Round Robin(RR), Shortest Job First(SJF) and Shortest Remaining Time First(SRTF). This project provides a visual and dynamic way to understand scheduling algorithms, making it ideal for students and enthusiasts interested in operating systems.
+An interactive simulator for learning and comparing CPU scheduling algorithms: **SRTF** (Shortest Remaining Time First), **RRV** (Virtual Round Robin), and **MLFQ** (Multi-Level Feedback Queue). Designed to be visual, simple, and effective for students.
 
 **[View the live application here](https://scheduling-algorithm-simulator.vercel.app/)**.
 
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Overview
 
-This project is a web-based simulator for CPU scheduling algorithms. It allows users to input different processes with specific attributes (arrival time, burst time, etc.) and visualize how these processes are scheduled according to the chosen scheduling algorithm.
+This project is a web-based simulator for CPU scheduling algorithms. It allows users to input different processes once and compare how different algorithms handle them in real-time on a single screen.
 
 ## Features
 
-- **Interactive Form**: Add and configure processes with attributes such as arrival time, burst time, and background color.
-- **Scheduling Algorithms**: Currently supports FCFS (First Come First Serve), RR (Round Robin), SJF (Shortest Job First) and SRTF (Shortest Remaining Time First).
-- **Real-Time Visualization**: Watch processes as they are scheduled and executed based on selected algorithms.
-- **Dark Mode Support**: Uses a ThemeProvider for seamless switching between dark and light themes.
+- **Single-Screen Comparison**: One set of inputs, multiple algorithm results.
+- **Dummies-First UI**: Clean, intuitive interface with zero clutter.
+- **Advanced Algorithms**: Supports SRTF, Virtual Round Robin (RRV), and Multi-Level Feedback Queue (MLFQ).
+- **Visual Gantt Charts**: Interactive charts to see exactly how time is allocated.
+- **Real-Time Calculation**: Change a burst time and see all results update instantly.
 
 ## Technologies Used
 

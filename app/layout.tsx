@@ -10,30 +10,31 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = JetBrains_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Simulador de Planificación de CPU SJF",
+  title: "Simulador de Planificación de CPU para Dummies",
   description:
-    "Explora y simula el algoritmo de planificación de CPU Shortest Job First (SJF). Perfecto para aprender y probar conceptos de planificación de CPU.",
+    "Explora y compará algoritmos de planificación de CPU (SRTF, RRV, MLFQ) en tiempo real. Diseñado para aprender conceptos de sistemas operativos de forma visual.",
   keywords: [
     "simulador de algoritmos de planificación",
-    "SJF",
-    "planificación de CPU",
-    "algoritmos de SO",
-    "simulador interactivo",
+    "CPU Scheduling",
+    "SRTF",
+    "Round Robin Virtual",
+    "MLFQ",
+    "sistemas operativos",
   ],
   openGraph: {
-    title: "Simulador de Planificación de CPU SJF",
+    title: "Simulador de Planificación de CPU para Dummies",
     description:
-      "Prueba y aprende el algoritmo de planificación de CPU SJF con este simulador interactivo.",
+      "Aprendé y compará SRTF, Round Robin Virtual y MLFQ con este simulador interactivo.",
     url: "https://scheduling-algorithm-simulator.vercel.app/",
-    siteName: "Simulador de Planificación SJF",
+    siteName: "Simulador de Planificación de CPU",
     locale: "es_ES",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Simulador de Planificación de CPU SJF",
+    title: "Simulador de Planificación de CPU para Dummies",
     description:
-      "Simula el algoritmo de planificación de CPU SJF para aprender y probar.",
+      "Simulá y compará algoritmos de planificación de CPU de forma visual y sencilla.",
   },
   
 };

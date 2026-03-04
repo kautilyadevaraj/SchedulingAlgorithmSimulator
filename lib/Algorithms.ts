@@ -1,4 +1,4 @@
-// ShortestJobFirst.ts
+// Algorithms.ts
 
 /**
  * Define the Process type

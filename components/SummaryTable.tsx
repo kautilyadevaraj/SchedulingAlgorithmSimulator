@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import { ScheduledProcess } from "@/lib/ShortestJobFirst";
+import { ScheduledProcess } from "@/lib/Algorithms";
 
 type SummaryTableProps = {
   processStats: ScheduledProcess[];

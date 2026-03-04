@@ -32,7 +32,7 @@ import {
   shortestRemainingTimeFirst,
   SimulationResult,
   Process,
-} from "@/lib/ShortestJobFirst";
+} from "@/lib/Algorithms";
 import SummaryStatistics from "./SummaryStatistics";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -223,14 +223,14 @@ export default function MainForm() {
               >
                 <div className="space-y-4">
                   <FormLabel className="text-3xl font-extrabold tracking-tight">
-                    Shortest Job
+                    CPU Scheduler
                   </FormLabel>
                   <div className="text-base text-muted-foreground p-5 bg-muted/50 rounded-xl border border-border/50">
                     <p className="leading-relaxed">
-                      Compará las dos variantes: <strong>SJF</strong>{" "}
-                      (No-preventivo) y <strong>SRTF</strong> (Preventivo).
-                      Ideal para entender cómo la capacidad de interrumpir
-                      procesos reduce el tiempo de espera promedio.
+                      Simulá y compará algoritmos de planificación como{" "}
+                      <strong>SRTF</strong>, <strong>RRV</strong> y{" "}
+                      <strong>MLFQ</strong>. Ideal para entender cómo cada
+                      estrategia afecta los tiempos de espera y retorno.
                     </p>
                   </div>
                 </div>
@@ -239,7 +239,7 @@ export default function MainForm() {
                     type="submit"
                     className="flex-1 font-bold py-7 text-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Simular Ambos
+                    Simular Algoritmos
                   </Button>
                   <Button
                     type="button"
