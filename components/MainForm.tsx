@@ -552,12 +552,12 @@ export default function MainForm() {
         </CardContent>
       </Card>
       {finalizedProcesses.length > 0 && (
-        <div ref={summaryRef} className="col-span-2 md:col-span-3 flex flex-col items-center w-full max-w-full overflow-hidden">
-          <div className="w-full md:w-3/4 overflow-x-auto">
+        <div ref={summaryRef} className="col-span-3 flex flex-col items-center">
+          <div className="md:w-3/4 w-full">
             <GanttChart processes={resultSequence} />
           </div>
-          <div className="w-full max-w-[90vw] flex flex-col md:flex-row justify-center items-center md:items-start overflow-x-auto pb-4">
-            <div className="w-full md:w-auto md:pl-10">
+          <div className="w-[90vw] flex justify-center flex-wrap md:flex-nowrap">
+            <div className="md:pl-10">
               <SummaryTable
                 originalProcesses={finalizedProcesses}
                 scheduledProcesses={resultSequence}
@@ -565,12 +565,10 @@ export default function MainForm() {
               />
             </div>
 
-            <div className="w-full md:w-auto mt-6 md:mt-0">
-              <SummaryStatistics
-                totalProcesses={finalizedProcesses.length}
-                scheduledProcesses={resultSequence}
-              />
-            </div>
+            <SummaryStatistics
+              totalProcesses={finalizedProcesses.length}
+              scheduledProcesses={resultSequence}
+            />
           </div>
         </div>
       )}
