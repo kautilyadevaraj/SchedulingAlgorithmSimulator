@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
+
 // Type definition for Process
 export type Process = {
   process_id: number;
@@ -26,10 +29,35 @@ if (typeof window === "undefined") {
       createRequire: (filename: string) => NodeRequire;
     };
     const nativeRequire = createRequire(__filename);
-    nativeAddon = nativeRequire("../build/Release/scheduling_algorithms") as NativeAddon;
+    const nativeCandidates = [
+      path.join(process.cwd(), "build", "Release", "scheduling_algorithms.node"),
+      path.join(process.cwd(), "build", "Release", "scheduling_algorithms"),
+      "../build/Release/scheduling_algorithms",
+    ];
+
+    for (const candidate of nativeCandidates) {
+      if (candidate.endsWith(".node") && !existsSync(candidate)) {
+        continue;
+      }
+
+      try {
+        nativeAddon = nativeRequire(candidate) as NativeAddon;
+        break;
+      } catch {
+        // Try next candidate.
+      }
+    }
+
+    if (!nativeAddon) {
+      console.warn("Native C++ addon not found. Using TypeScript implementations.");
+    }
   } catch {
     console.warn("Native C++ addon not found. Using TypeScript implementations.");
   }
+}
+
+export function isNativeAddonLoaded(): boolean {
+  return nativeAddon !== null;
 }
 
 /**
