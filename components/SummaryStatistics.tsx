@@ -5,6 +5,7 @@ type Process = {
   process_id: number;
   arrival_time: number;
   burst_time: number;
+  priority?: number;
   background: string;
 };
 
@@ -32,7 +33,9 @@ export default function SummaryStatistics({ totalProcesses, scheduledProcesses }
         <div className="flex justify-evenly w-full text-center">
           <div className="text-sm md:text-lg">
             <AnimatedShinyText>Throughput</AnimatedShinyText>
-            {Math.round((totalProcesses / totalExecutionTime) * 100) / 100}
+            {totalExecutionTime > 0
+              ? Math.round((totalProcesses / totalExecutionTime) * 100) / 100
+              : 0}
           </div>
           <div className="text-sm md:text-lg">
             <AnimatedShinyText>CPU Utilization</AnimatedShinyText>

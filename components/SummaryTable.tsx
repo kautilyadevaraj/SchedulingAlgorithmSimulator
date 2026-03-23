@@ -19,6 +19,7 @@ type Process = {
   process_id: number;
   arrival_time: number;
   burst_time: number;
+  priority?: number;
   background: string;
 };
 
@@ -31,7 +32,6 @@ type SummaryTableProps = {
 export function SummaryTable({
   originalProcesses,
   scheduledProcesses,
-  algorithm,
 }: SummaryTableProps) {
   const [animationKey, setAnimationKey] = useState(0);
 
@@ -43,72 +43,37 @@ export function SummaryTable({
   let totalWaitingTime = 0;
   let totalTurnaroundTime = 0;
 
+  // Build completion time from the actual timeline (includes idle + context switch blocks).
+  const completionByProcessId = new Map<number, number>();
+  let timeline = 0;
+  scheduledProcesses.forEach((scheduledProcess) => {
+    timeline += scheduledProcess.burst_time;
+    if (scheduledProcess.process_id > 0) {
+      completionByProcessId.set(scheduledProcess.process_id, timeline);
+    }
+  });
+
   // Initialize calculated processes without waiting time calculation
   const calculatedProcesses = originalProcesses.map((process) => {
     return {
       ...process,
+      completionTime: 0,
       waitingTime: 0,
       turnaroundTime: 0,
     };
   });
 
-  // If the algorithm is FCFS, calculate waiting and turnaround times after sorting by arrival time
-if (algorithm === "FCFS") {
-  // Sort processes by arrival time for FCFS order, ignoring idle processes
-  const sortedProcesses = [...calculatedProcesses].sort(
-    (a, b) => a.arrival_time - b.arrival_time
-  );
-
-  let cumulativeTime = 0;
-
-  // Calculate waiting time and turnaround time for each process
-  sortedProcesses.forEach((process) => {
-    // Skip idle periods (arrival_time === -1) and adjust cumulative time for gaps
-    if (process.arrival_time === -1) {
-      return; // Ignore idle periods for waiting and turnaround calculations
-    }
-
-    // If the next process arrives after the current cumulative time, update for idle time
-    if (process.arrival_time > cumulativeTime) {
-      cumulativeTime = process.arrival_time; // Adjust to next process arrival, skipping idle time
-    }
-
-    // Waiting time is the difference between cumulative time and arrival time
-    process.waitingTime = Math.max(0, cumulativeTime - process.arrival_time);
-
-    // Turnaround time is waiting time + burst time
-    process.turnaroundTime = process.waitingTime + process.burst_time;
-
-    // Update cumulative time by adding the current process's burst time
-    cumulativeTime += process.burst_time;
-
-    // Update totals
-    totalWaitingTime += process.waitingTime;
-    totalTurnaroundTime += process.turnaroundTime;
-  });
-} else {
-  // For other algorithms, use intervals in scheduledProcesses
+  {
+  // Standard formulas: TAT = CT - AT, WT = TAT - BT.
+  // CT is taken from full timeline so context switching time is naturally included.
   calculatedProcesses.forEach((process) => {
-    const intervals = scheduledProcesses.filter(
-      (scheduledProcess) => scheduledProcess.process_id === process.process_id
-    );
+    const completionTime = completionByProcessId.get(process.process_id) ?? 0;
+    const turnaroundTime = Math.max(completionTime - process.arrival_time, 0);
+    const waitingTime = Math.max(turnaroundTime - process.burst_time, 0);
 
-    let processStartTime = process.arrival_time;
-    let waitingTime = 0;
-
-    intervals.forEach((interval) => {
-      if (processStartTime < interval.arrival_time) {
-        waitingTime += interval.arrival_time - processStartTime;
-      }
-      processStartTime = interval.arrival_time + interval.burst_time;
-    });
-
-    const turnaroundTime =
-      waitingTime +
-      intervals.reduce((sum, interval) => sum + interval.burst_time, 0);
-
-    process.waitingTime = waitingTime;
+    process.completionTime = completionTime;
     process.turnaroundTime = turnaroundTime;
+    process.waitingTime = waitingTime;
 
     // Update cumulative totals
     totalWaitingTime += waitingTime;
@@ -120,21 +85,17 @@ if (algorithm === "FCFS") {
   turnaroundTime = totalTurnaroundTime;
 
   // Calculate CPU utilization
-  const totalBurstTime = scheduledProcesses.reduce(
-    (sum, process) => process.arrival_time !== -1?sum + process.burst_time:sum+0  ,
+  const totalBurstTime = originalProcesses.reduce(
+    (sum, process) => sum + process.burst_time,
     0
   );
 
-  const startTime = Math.min(
-    ...scheduledProcesses.map((process) => process.arrival_time)
+  totalExecutionTime = scheduledProcesses.reduce(
+    (sum, process) => sum + process.burst_time,
+    0
   );
-  const endTime =
-    startTime +
-    scheduledProcesses.reduce((sum, process) => sum + process.burst_time, 0);
 
-  totalExecutionTime = endTime - startTime;
-
-  cpuUtilization = (totalBurstTime / totalExecutionTime) * 100;
+  cpuUtilization = totalExecutionTime > 0 ? (totalBurstTime / totalExecutionTime) * 100 : 0;
 
   const popOutVariants = {
     hidden: { scale: 0.8, opacity: 0 },
@@ -172,10 +133,13 @@ if (algorithm === "FCFS") {
               <p className="text-xs md:text-lg">Burst Time</p>
             </TableHead>
             <TableHead className="text-center">
-              <p className="text-xs md:text-lg">Waiting Time</p>
+              <p className="text-xs md:text-lg">Completion Time</p>
             </TableHead>
             <TableHead className="text-center">
               <p className="text-xs md:text-lg">Turnaround Time</p>
+            </TableHead>
+            <TableHead className="text-center">
+              <p className="text-xs md:text-lg">Waiting Time</p>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -200,17 +164,20 @@ if (algorithm === "FCFS") {
                 {process.burst_time}
               </TableCell>
               <TableCell className="text-center">
-                {process.waitingTime}
+                {process.completionTime}
               </TableCell>
               <TableCell className="text-center">
                 {process.turnaroundTime}
+              </TableCell>
+              <TableCell className="text-center">
+                {process.waitingTime}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={3} className="pl-3 text-xs">
+            <TableCell colSpan={4} className="pl-3 text-xs">
               Total
             </TableCell>
             <TableCell className="text-center">{totalWaitingTime}</TableCell>

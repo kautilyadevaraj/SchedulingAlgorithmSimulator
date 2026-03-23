@@ -16,29 +16,33 @@ import { Input } from "@/components/ui/input";
 import { GradientPicker } from "./GradientPicker";
 import { useEffect } from "react";
 
-// Generate a random color (with high saturation)
 const generateRandomColor = () => {
   const hue = Math.floor(Math.random() * 360);
-  const saturation = 60 + Math.floor(Math.random() * 40); // 60-100%
-  const lightness = 50 + Math.floor(Math.random() * 20); // 50-70%
+  const saturation = 60 + Math.floor(Math.random() * 40);
+  const lightness = 50 + Math.floor(Math.random() * 20);
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };
 
 type Process = {
   arrival_time: number;
   burst_time: number;
+  priority: number;
   background: string;
 };
 
 const ProcessSchema = z.object({
   arrival_time: z.coerce
     .number()
-    .gt(-1, { message: "Arrival Time cannot be negative." }) // allow 0, disallow negatives
+    .gt(-1, { message: "Arrival Time cannot be negative." })
     .lte(100, { message: "Arrival Time cannot be greater than 100." }),
   burst_time: z.coerce
     .number()
-    .gt(0, { message: "Burst Time must be greater than 0." }) // strictly positive
+    .gt(0, { message: "Burst Time must be greater than 0." })
     .lte(100, { message: "Burst Time cannot be greater than 100." }),
+  priority: z.coerce
+    .number()
+    .gte(0, { message: "Priority cannot be negative." })
+    .lte(100, { message: "Priority cannot be greater than 100." }),
   background: z.string().nonempty({
     message: "Please select a background.",
   }),
@@ -55,6 +59,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
     defaultValues: initialValues || {
       arrival_time: 0,
       burst_time: 1,
+      priority: 0,
       background: generateRandomColor(),
     },
   });
@@ -63,7 +68,6 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
     if (initialValues) {
       form.reset(initialValues);
     } else {
-      // Generate new random color for new process
       form.setValue("background", generateRandomColor());
     }
   }, [initialValues, form]);
@@ -73,6 +77,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
     form.reset({
       arrival_time: 0,
       burst_time: 1,
+      priority: 0,
       background: generateRandomColor(),
     });
   };
@@ -87,7 +92,7 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
             <FormItem>
               <FormLabel>Arrival Time</FormLabel>
               <FormControl>
-                <Input placeholder="Default arrival time : 0" {...field} />
+                <Input placeholder="Default arrival time : 0" type="number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -100,7 +105,20 @@ export function ProcessForm({ addProcess, initialValues }: ProcessFormProps) {
             <FormItem>
               <FormLabel>Burst Time</FormLabel>
               <FormControl>
-                <Input placeholder="Default burst time : 1" {...field} />
+                <Input placeholder="Default burst time : 1" type="number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="priority"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Priority (Lower number = Higher priority)</FormLabel>
+              <FormControl>
+                <Input placeholder="Default priority : 0" type="number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

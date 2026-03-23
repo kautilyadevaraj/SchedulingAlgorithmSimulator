@@ -24,6 +24,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+native-build.log
+npm-check.log
 
 # local env files
 .env*.local
@@ -34,3 +36,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Native addon build artifacts (node-gyp)
+*.node
+*.o
+*.a
+*.so
+*.dylib
+build/
+out/
+*.exp
+*.lib
+*.dll
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.iml
