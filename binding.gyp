@@ -7,7 +7,9 @@
         'cpp/src/FirstComeFirstServe.cpp',
         'cpp/src/RoundRobin.cpp',
         'cpp/src/ShortestJobFirst.cpp',
-        'cpp/src/ShortestRemainingTimeFirst.cpp'
+        'cpp/src/ShortestRemainingTimeFirst.cpp',
+        'cpp/src/PriorityNonPreemptive.cpp',
+        'cpp/src/PriorityPreemptive.cpp'
       ],
       'include_dirs': [
         'cpp/include',

@@ -42,10 +42,6 @@ import { useRef, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import GanttChart from "./GanttChart";
 import { SummaryTable } from "./SummaryTable";
-import { firstComeFirstServe } from "@/lib/FirstComeFirstServe";
-import { shortestJobFirst } from "@/lib/ShortestJobFirst";
-import { roundRobin } from "@/lib/RoundRobin";
-import { shortestRemainingTimeFirst } from "@/lib/ShortestRemainingTimeFirst";
 import SummaryStatistics from "./SummaryStatistics";
 import { toast } from "sonner";
 
@@ -54,10 +50,26 @@ const FormSchema = z
     algorithm: z.string({
       required_error: "Please select an algorithm to display.",
     }).min(1, { message: "Please select an algorithm to display." }),
-    quantum: z.coerce
-      .number()
-      .lte(100, { message: "Quantum cannot be greater than 100." })
-      .optional(),
+    quantum: z
+      .preprocess((value) => {
+        if (value === "" || value === null || value === undefined) {
+          return undefined;
+        }
+        const parsed = Number(value);
+        return Number.isNaN(parsed) ? undefined : parsed;
+      },
+      z.number().lte(100, { message: "Quantum cannot be greater than 100." }).optional()),
+    contextSwitch: z
+      .preprocess((value) => {
+        if (value === "" || value === null || value === undefined) {
+          return 0;
+        }
+        const parsed = Number(value);
+        return Number.isNaN(parsed) ? 0 : parsed;
+      },
+      z.number()
+        .gte(0, { message: "Context switching time cannot be negative." })
+        .lte(100, { message: "Context switching time cannot be greater than 100." })),
   })
   .refine(
     (data) => {
@@ -78,6 +90,7 @@ type Process = {
   process_id: number;
   arrival_time: number;
   burst_time: number;
+  priority: number;
   background: string;
 };
 
@@ -98,6 +111,8 @@ export default function MainForm() {
       a === "shortest_remaining_time_first"
     )
       return "SRTF";
+    if (a === "pnp" || a === "prioritynonpreemptive" || a === "priority_non_preemptive") return "PNP";
+    if (a === "pp" || a === "prioritypreemptive" || a === "priority_preemptive") return "PP";
     return null;
   };
 
@@ -116,16 +131,26 @@ export default function MainForm() {
     return undefined;
   };
 
+  const getInitialContextSwitch = () => {
+    const contextSwitch = searchParams?.get("contextSwitch");
+    if (contextSwitch) {
+      return parseInt(contextSwitch);
+    }
+    return 0;
+  };
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       algorithm: getInitialAlgorithm(),
       quantum: getInitialQuantum(),
+      contextSwitch: getInitialContextSwitch(),
     },
   });
 
   // Watch quantum so URL stays in sync when it changes
   const quantumValue = form.watch("quantum");
+  const contextSwitchValue = form.watch("contextSwitch");
 
   const [processes, setProcesses] = useState<Process[]>([]);
 
@@ -205,7 +230,7 @@ export default function MainForm() {
     }
   }, [shouldAutoSubmit, processes.length, selectedAlgorithm]);
 
-  // Update URL when processes, algorithm or quantum changes
+  // Update URL when processes, algorithm, quantum or context switch changes
   useEffect(() => {
     // Skip URL update if we haven't finished initial load
     if (!hasLoadedFromUrl) return;
@@ -236,6 +261,13 @@ export default function MainForm() {
       params.delete("quantum");
     }
 
+    // context switch handling (common for all algorithms)
+    if (contextSwitchValue != null && !Number.isNaN(contextSwitchValue)) {
+      params.set("contextSwitch", String(contextSwitchValue));
+    } else {
+      params.delete("contextSwitch");
+    }
+
     // processes handling
     if (processes.length > 0) {
       params.set("processes", encodeURIComponent(JSON.stringify(processes)));
@@ -249,7 +281,7 @@ export default function MainForm() {
       const newUrl = newQuery ? `?${newQuery}` : window.location.pathname;
       router.replace(newUrl, { scroll: false });
     }
-  }, [processes, selectedAlgorithm, quantumValue, router, hasLoadedFromUrl]);
+  }, [processes, selectedAlgorithm, quantumValue, contextSwitchValue, router, hasLoadedFromUrl]);
 
   const addProcess = (newProcess: Omit<Process, "process_id">) => {
     if (currentEditIndex !== null) {
@@ -313,6 +345,7 @@ export default function MainForm() {
         process_id: i + 1,
         arrival_time: Math.floor(Math.random() * 10), // 0-9
         burst_time: Math.floor(Math.random() * 10) + 1, // 1-10
+        priority: Math.floor(Math.random() * 5), // 0-4 (lower is higher priority)
         background: generateRandomColor(),
       });
     }
@@ -329,34 +362,47 @@ export default function MainForm() {
     toast.success(`Generated ${numProcesses} random processes!`);
   };
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    let sequence: Process[] = [];
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
     if (processes.length === 0) {
       toast.error("No processes added!");
       return;
     }
-    switch (data.algorithm) {
-      case "FCFS":
-        sequence = firstComeFirstServe(processes);
-        break;
-      case "SJF":
-        sequence = shortestJobFirst(processes);
-        break;
-      case "RR":
-        sequence = roundRobin(processes, data.quantum ?? 0);
-        break;
-      case "SRTF":
-        sequence = shortestRemainingTimeFirst(processes);
-      default:
-        break;
-    }
 
-    setResultSequence(sequence);
-    setFinalizedProcesses([...processes]);
-    setTimeout(() => {
-      summaryRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 0);
+    try {
+      const response = await fetch("/api/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          algorithm: data.algorithm,
+          quantum: data.quantum,
+          contextSwitch: data.contextSwitch ?? 0,
+          processes,
+        }),
+      });
+
+      const payload = (await response.json()) as {
+        sequence?: Process[];
+        error?: string;
+      };
+
+      if (!response.ok || !payload.sequence) {
+        toast.error(payload.error ?? "Failed to run scheduling algorithm.");
+        return;
+      }
+
+      setResultSequence(payload.sequence);
+      setFinalizedProcesses([...processes]);
+      setTimeout(() => {
+        summaryRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 0);
+    } catch {
+      toast.error("Could not reach scheduling service.");
+    }
   }
+
+  const onInvalid = () => {
+    toast.error("Please fix form errors before submitting.");
+  };
 
   return (
     <div className="grid grid-cols-2 w-full max-w-full space-y-5 md:space-y-0 overflow-hidden justify-items-center">
@@ -364,7 +410,7 @@ export default function MainForm() {
       <div className="row-span-2 col-span-2 md:col-span-1 max-w-full md:pl-14 flex flex-col items-center px-4">
         <div className="md:max-w-[300px] border p-4 rounded-xl">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-3">
               <FormField
                 control={form.control}
                 name="algorithm"
@@ -395,6 +441,12 @@ export default function MainForm() {
                         <SelectItem value="SRTF">
                           Shortest Remaining Time First
                         </SelectItem>
+                        <SelectItem value="PNP">
+                          Priority Non-Preemptive
+                        </SelectItem>
+                        <SelectItem value="PP">
+                          Priority Preemptive
+                        </SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -422,6 +474,12 @@ export default function MainForm() {
                     {selectedAlgorithm === "SRTF" && (
                       "Preemptive version of SJF. Always executes the process with the shortest remaining time."
                     )}
+                    {selectedAlgorithm === "PNP" && (
+                      "Executes the highest priority process first. Once started, a process runs to completion without interruption. (Lower number means higher priority.)"
+                    )}
+                    {selectedAlgorithm === "PP" && (
+                      "Executes the highest priority process first, and a higher priority process can preempt a running one. (Lower number means higher priority.)"
+                    )}
                   </p>
                   {!descriptionRevealed && (
                     <p className="text-xs text-center mt-1 opacity-70">Click to reveal</p>
@@ -440,7 +498,11 @@ export default function MainForm() {
                         <Input
                           type="number"
                           min={1}
-                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? undefined : Number(value));
+                          }}
                           placeholder="Time Quantum"
                           className="input-field"
                         />
@@ -450,6 +512,29 @@ export default function MainForm() {
                   )}
                 />
               )}
+              <FormField
+                control={form.control}
+                name="contextSwitch"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Context Switching Time</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={field.value ?? 0}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? 0 : Number(value));
+                        }}
+                        placeholder="Context switching time"
+                        className="input-field"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1">Submit</Button>
                 <Button 
@@ -513,6 +598,9 @@ export default function MainForm() {
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Burst Time : {process.burst_time}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Priority : {process.priority}
                       </p>
                     </div>
                   </div>

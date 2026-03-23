@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "build-native": "node-gyp configure && node-gyp build",
-    "prebuild": "npm run build-native || true",
-    "dev": "npm run build-native && next dev",
-    "build": "npm run build-native && next build",
+    "build-native-safe": "npm run build-native || true",
+    "dev": "next dev",
+    "build": "next build",
+    "dev:native": "npm run build-native-safe && next dev",
+    "build:native": "npm run build-native-safe && next build",
     "start": "next start",
     "lint": "next lint",
     "clean-native": "node-gyp clean"
