@@ -18,14 +18,18 @@
       'conditions': [
         ['OS=="win"', {
           'msbuild_toolset': 'v143',
-          'msbuild_settings': {
+          'msvs_settings': {
             'VCCLCompilerTool': {
-              'RuntimeLibrary': '1'
+              'RuntimeLibrary': '1',
+              'AdditionalOptions': [
+                '/std:c++20'
+              ]
             }
           }
         }],
         ['OS=="unix"', {
-          'cflags': ['-Wall', '-Wextra', '-O2']
+          'cflags': ['-Wall', '-Wextra', '-O2'],
+          'cflags_cc': ['-std=c++20']
         }]
       ]
     }

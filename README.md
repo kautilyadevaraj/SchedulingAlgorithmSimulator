@@ -1,115 +1,136 @@
 # CPU Scheduling Algorithm Simulator
 
-An interactive simulator for learning and testing various CPU scheduling algorithms, including First Come First Serve (FCFS), Round Robin(RR), Shortest Job First(SJF) and Shortest Remaining Time First(SRTF). This project provides a visual and dynamic way to understand scheduling algorithms, making it ideal for students and enthusiasts interested in operating systems.
-
-**[View the live application here](https://scheduling-algorithm-simulator.vercel.app/)**.
-
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-This project is a web-based simulator for CPU scheduling algorithms. It allows users to input different processes with specific attributes (arrival time, burst time, etc.) and visualize how these processes are scheduled according to the chosen scheduling algorithm.
+Interactive CPU scheduling simulator with visual Gantt output, per-process metrics, and optional native C++ execution.
 
 ## Features
 
-- **Interactive Form**: Add and configure processes with attributes such as arrival time, burst time, and background color.
-- **Scheduling Algorithms**: Currently supports FCFS (First Come First Serve), RR (Round Robin), SJF (Shortest Job First) and SRTF (Shortest Remaining Time First).
-- **Real-Time Visualization**: Watch processes as they are scheduled and executed based on selected algorithms.
-- **Dark Mode Support**: Uses a ThemeProvider for seamless switching between dark and light themes.
+- Algorithms:
+	- FCFS (First Come First Serve)
+	- SJF (Shortest Job First)
+	- SRTF (Shortest Remaining Time First)
+	- RR (Round Robin)
+	- Priority Non-Preemptive
+	- Priority Preemptive
+- Process fields:
+	- Arrival Time
+	- Burst Time
+	- Priority
+	- Color
+- Global scheduling controls:
+	- Time Quantum (RR)
+	- Context Switching Time (applied across algorithms)
+- Visual and metrics output:
+	- Gantt chart with Idle and CS (context switch) blocks
+	- Completion Time, Waiting Time, Turnaround Time
+	- Average metrics, throughput, CPU utilization
+- Runtime strategy:
+	- Native C++ addon used when available
+	- TypeScript fallback when native addon is unavailable
 
-## Technologies Used
+## Tech Stack
 
-- **Next.js**: Frontend framework for React applications.
-- **TypeScript**: Provides type safety and ensures code robustness.
-- **Tailwind CSS**: Utility-first CSS framework for styling.
-- **Zod**: For form validation schemas.
-- **React Hook Form**: Handles form state and validation.
-- **Custom Components**: Built-in components like `GradientPicker` for user-friendly UI interactions.
+- Next.js 14
+- React + TypeScript
+- Tailwind CSS
+- React Hook Form + Zod
+- node-gyp + C++ (optional native path)
 
+## Project Structure
+
+```text
+app/
+	api/schedule/route.ts          # Server-side scheduling endpoint (Node runtime)
+components/
+	MainForm.tsx                   # Inputs, run action, and results wiring
+	GanttChart.tsx                 # Timeline visualization
+	SummaryTable.tsx               # CT / WT / TAT table
+	SummaryStatistics.tsx          # Averages and utilization
+cpp/
+	include/                       # C++ headers
+	src/                           # C++ algorithm implementations + binding.cc
+lib/
+	scheduling-native.ts           # Native loader with TS fallback
+binding.gyp                      # Native build config
+```
+
+## Prerequisites
+
+- Node.js 20+
+- npm
+- Python 3.10+
+
+For native C++ build on Windows:
+- Visual Studio Build Tools 2022 (Desktop C++ workload)
 
 ## Installation
 
-To set up the project locally, ensure you have [Node.js](https://nodejs.org/en/download/) and [Yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) installed.
-
-### Step 1: Clone the Repository
-
 ```bash
-git clone https://github.com/kautilyadevaraj/SchedulingAlgorithmSimulator
-cd scheduling-algorithm-simulator
-```
-
-### Step 2: Install Dependencies
-
-Run the following command to install the necessary dependencies.
-#### Using Yarn
-```bash
-yarn install
-```
-
-#### OR using npm
-```bash
+git clone https://github.com/kautilyadevaraj/SchedulingAlgorithmSimulator.git
+cd SchedulingAlgorithmSimulator
 npm install
 ```
 
-### Step 3: Environment Setup
+## Run Modes
 
-No environment variables are required for this project in its current state. However, if you extend the project with a backend API or database, create a .env.local file in the root directory for environment variables.
+Standard mode (no native build required):
 
-### Step 4: Run the Development Server
-
-Start the development server by running:
-#### Using Yarn
-```bash
-yarn dev
-```
-
-#### OR using npm
 ```bash
 npm run dev
 ```
-This will start the Next.js development server at [http://localhost:3000](http://localhost:3000). You can view the project in your browser by navigating to this address.
 
-## Step 5: Build for Production (Optional)
+Native mode (build C++ first, then start):
 
-If you want to build the project for production, run:
-#### Using Yarn
 ```bash
-yarn build
+npm run dev:native
 ```
 
-#### OR using npm
+## Native Build Commands
+
+```bash
+npm run build-native
+npm run clean-native
+```
+
+If native build succeeds, addon output is generated at:
+
+```text
+build/Release/scheduling_algorithms.node
+```
+
+## Production Build
+
+Standard production build:
+
 ```bash
 npm run build
+npm run start
 ```
-This will create an optimized production build in the .next folder.
 
-## Usage
+Native production build:
 
-1. Add Processes: Use the form to add processes with specific arrival times, burst times, and custom background colors.
-2. Select Algorithm: Choose a scheduling algorithm from the provided options (e.g., SRTF, FCFS).
-3. Run Simulation: The simulator will display the scheduling results in a real-time animation.
+```bash
+npm run build:native
+npm run start
+```
+
+## Troubleshooting
+
+- Native addon missing warning:
+	- App still runs using TypeScript fallback.
+- Windows node-gyp issues:
+	- Ensure VS 2022 Build Tools are installed and complete.
+	- Reopen terminal after installation.
+	- Run `npm run clean-native` then `npm run build-native`.
+- Node 24 build requirement:
+	- C++20 is required by Node headers; this repository is configured accordingly in `binding.gyp`.
 
 ## Contributing
 
-We welcome contributions! To contribute to this project, please follow these steps:
-
 1. Fork the repository.
-2. Create a new branch (git checkout -b feature-branch-name).
-3. Make your changes.
-4. Commit your changes (git commit -m 'Add some feature').
-5. Push to the branch (git push origin feature-branch-name).
-6. Open a Pull Request.
-
-For major changes, please open an issue first to discuss what you would like to change.
+2. Create a branch.
+3. Commit focused changes.
+4. Open a pull request.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT. See `LICENSE`.

@@ -12,8 +12,15 @@ This project uses Node.js native addons to run scheduling algorithms in C++ for 
 
 ## Building
 
-### Automatic Build
-The C++ addon will be automatically built when you run:
+### Native Dev/Build Mode
+The C++ addon is built when you run native scripts:
+```bash
+npm run dev:native
+npm run build:native
+```
+
+### Standard Mode (No Native Build Required)
+For quick development without native compilation:
 ```bash
 npm run dev
 npm run build
@@ -42,10 +49,7 @@ If you encounter issues on Windows:
 
 2. Ensure Python 3.10+ is installed and in your PATH
 
-3. Set the Visual Studio version (if needed):
-   ```bash
-   npm config set msvs_version 2022
-   ```
+3. Reopen your terminal after installation so toolchain environment changes are picked up.
 
 ## Development
 
